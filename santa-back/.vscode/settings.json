@@ -1,0 +1,25 @@
+{
+    "workbench.colorCustomizations": {
+		"activityBar.activeBackground": "#78605d",
+		"activityBar.background": "#78605d",
+		"activityBar.foreground": "#e7e7e7",
+		"activityBar.inactiveForeground": "#e7e7e799",
+		"activityBarBadge.background": "#40bf4e",
+		"activityBarBadge.foreground": "#15202b",
+		"commandCenter.border": "#e7e7e799",
+		"sash.hoverBorder": "#78605d",
+		"statusBar.background": "#5b4947",
+		"statusBar.foreground": "#e7e7e7",
+		"statusBarItem.hoverBackground": "#78605d",
+		"statusBarItem.remoteBackground": "#5b4947",
+		"statusBarItem.remoteForeground": "#e7e7e7",
+		"titleBar.activeBackground": "#5b4947",
+		"titleBar.activeForeground": "#e7e7e7",
+		"titleBar.inactiveBackground": "#5b494799",
+		"titleBar.inactiveForeground": "#e7e7e799"
+	},
+    "peacock.color": "#5b4947",
+    "defaultFormatter": "esbenp.prettier-vscode",
+	"javascript.format.insertSpaceAfterOpeningAndBeforeClosingEmptyBraces": false,
+	"typescript.format.insertSpaceAfterOpeningAndBeforeClosingEmptyBraces": false,
+}
