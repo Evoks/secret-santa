@@ -5,7 +5,8 @@ const Title = lazy(() => import('../components/Title'));
 
 export const loader: LoaderFunction = async ({ params }: LoaderFunctionArgs) => {
 	const groupId = params.id; // Access the 'id' route parameter
-	const response = await fetch(`${process.env.REACT_APP_API_URL}/group/${groupId}`);
+	const access_token = localStorage.getItem('access_token');
+	const response = await fetch(`${process.env.REACT_APP_API_URL}/group/${groupId}?access_token=${access_token}`);
 	const data = await response.json();
 	if (!response.ok) {
 		throw new Response('Group not found', { status: 404 });
@@ -16,9 +17,13 @@ export const loader: LoaderFunction = async ({ params }: LoaderFunctionArgs) => 
 const ManageGroup: React.FC = () => {
 	const data: any = useLoaderData();
 
+	if (!data.group) {
+		return <Title title={"⚠️ Groupe innacessible"} />;
+	}
+
 	return (
 		<>
-			<Title title={"Gestion du groupe"}/>
+			<Title title={"Gestion du groupe"} />
 			<GroupManager group={data.group} />
 		</>
 	);

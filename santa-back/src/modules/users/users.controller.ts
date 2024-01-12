@@ -11,7 +11,7 @@ export class UsersController {
 	) {}
 
 	@Post()
-	async create(@Body() userData: { name: string; email: string; password: string }) {
+	async create(@Body() userData: { name: string; email: string; password: string; userId?: string }) {
 		try {
 			const userDB = await this.userService.create(userData, this.authService);
 			return {

@@ -49,7 +49,7 @@ export class AuthService {
 		return user;
 	}
 
-	async checkAuth(token: string) {
+	async checkAuth(token: string): Promise<IUser> {
 		try {
 			return await this.jwtService.verifyAsync(token, {
 				secret: process.env.SECRET_KEY,

@@ -6,7 +6,7 @@ This project was bootstrapped with [Create React App](https://github.com/faceboo
 
 This app is a secret santa organisation helper done in React in SPA mode.
 
-You can create a group, set and manage information about it and create a user account.
+You can create a group, set and manage information about it and create an user account.
 
 You have to run the back server app in order to be able to use this front app.
 

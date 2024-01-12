@@ -3,9 +3,10 @@ import { RouterProvider, createBrowserRouter } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Body, ErrorPage } from './components/structure';
 // pages
-import { Error, Layout, HomePage, GroupManager, GroupFinder, LoginPage, Logout } from './pages/';
+import { Error, Layout, HomePage, GroupManager, UserGroups, GroupFinder, LoginPage, Logout } from './pages/';
 // loaders
 import { loader as groupLoader } from './pages/GroupManagerPage';
+import { loader as userGroupsLoader } from './pages/UserGroupsPage';
 import AuthContextWrapper from './contexts/AuthContext';
 import ToastContextWrapper from './contexts/ToastContext';
 
@@ -32,6 +33,12 @@ const router = createBrowserRouter([
 				element: <GroupManager />,
 				errorElement: <ErrorPage />,
 				loader: groupLoader,
+			},
+			{
+				path: '/my-groups/:authUserId',
+				element: <UserGroups />,
+				errorElement: <ErrorPage />,
+				loader: userGroupsLoader,
 			},
 			{
 				path: '/login',

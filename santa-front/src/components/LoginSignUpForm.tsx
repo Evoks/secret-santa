@@ -24,7 +24,7 @@ const formComponents: { [key: string]: React.FC<any> } = {
 	signup: SignUpForm,
 };
 
-const LoginSignUpForm: React.FC<LoginSignUpFormProps> = ({ state, dispatchState, displayButton, loginHandleSubmitCallback, signUpHandleSubmitCallback, propertyUserName = 'user', includeTitle = false, includeCard = false, includeForm = true }: any) => {
+const LoginSignUpForm: React.FC<LoginSignUpFormProps> = ({ state, dispatchState, displayButton, loginHandleSubmitCallback, signUpHandleSubmitCallback, propertyUserName = 'user', includeTitle = false, includeCard = false, includeForm = true }: LoginSignUpFormProps) => {
 	const [formType, setFormType] = useState<string>('login');
 
 	const FormComponent = formComponents[formType];

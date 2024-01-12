@@ -26,12 +26,14 @@ type SignUpFormProps = {
 	dispInputName?: boolean;
 }
 
-const SignUpForm: React.FC<SignUpFormProps> = ({ state, dispatchState, displayButton, handleSubmitCallback, propertyUserName = 'user', dispInputName = true, includeTitle = false, includeCard = false, includeForm = true }: any) => {
+const SignUpForm: React.FC<SignUpFormProps> = ({ state, dispatchState, displayButton, handleSubmitCallback, propertyUserName = 'user', dispInputName = true, includeTitle = false, includeCard = false, includeForm = true }: SignUpFormProps) => {
 	const { setAuthUser } = useContext(AuthContext);
 	const { addToast } = useContext(ToastContext);
 
 	const [passwordCheck, setPasswordCheck] = useState<string>('');
 	const [isLoading, setIsLoading] = useState<boolean>(false);
+
+	console.log({state});
 
 	const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
 		e.preventDefault();
@@ -42,7 +44,7 @@ const SignUpForm: React.FC<SignUpFormProps> = ({ state, dispatchState, displayBu
 		let success = true;
 		setIsLoading(true);
 		try {
-			const userLoggedIn = await AuthService.signUp(state[propertyUserName].name, state[propertyUserName].email, state[propertyUserName].password);
+			const userLoggedIn = await AuthService.signUp(state[propertyUserName].name, state[propertyUserName].email, state[propertyUserName].password, state[propertyUserName]._id);
 			if (!userLoggedIn) {
 				throw new Error('Une erreur est survenue lors de la création du compte');
 			}

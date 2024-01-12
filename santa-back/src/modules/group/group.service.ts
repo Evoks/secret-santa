@@ -9,6 +9,13 @@ import IAssociationData from 'src/types/IAssociationData.type';
 import CustomError from '../../helpers/classes/CustomError.class';
 import mongoose from 'mongoose';
 
+const userDataFields = {
+	_id: 1,
+	name: 1,
+	email: 1,
+	registered: 1,
+};
+
 @Injectable()
 export class GroupService {
 	async create(groupData: IGroupData) {
@@ -22,7 +29,7 @@ export class GroupService {
 				if (exclusion.excludedUsers?.length > 0) {
 					const user = await User.findById(new mongoose.Types.ObjectId(exclusion.userId));
 					if (!user) {
-						throw new CustomError(`User with _id ${exclusion.userId} not found`, 'Group creation');
+						throw new CustomError(`User with _id ${exclusion.user._id} not found`, 'Group creation');
 					}
 					const excludedUsers = [];
 					for (const userName of exclusion.excludedUsers) {
@@ -42,10 +49,9 @@ export class GroupService {
 		// associate a user to each user
 		const associations: IAssociationData[] = [];
 		try {
-			groupData.users.map(async (groupUser: any) => {
+			groupData.users.map(async (groupUser: IUser) => {
 				const userExcludedUsersList = exclusions.find((e) => e.userId === groupUser._id)?.excludedUsers || [];
 				const otherUsers = groupData.users.filter((u: IUser) => {
-					console.log(u._id, groupUser._id, groupUser._id, u._id !== groupUser._id);
 					return u._id !== groupUser._id;
 				});
 				console.log(otherUsers);
@@ -55,7 +61,6 @@ export class GroupService {
 						associations.findIndex((a) => a.associatedUser._id === otherUser._id) === -1
 					);
 				});
-				console.log({ groupUser, otherUsers, possibleAssociations });
 				if (possibleAssociations.length === 0) {
 					return;
 				}
@@ -91,23 +96,57 @@ export class GroupService {
 	}
 
 	async findAll(skip: number = 0, limit: number = 10) {
-		const groups = await Group.find().skip(skip).limit(limit);
-		return groups;
+		return await Group.find().skip(skip).limit(limit);
 	}
 
-	async findOne(id: string) {
-		// validate the ID
+	// find all groups from a user
+	async findAllGroupsFromUser(userId: string, skip: number = 0, limit: number = 10) {
+		const groups = await Group.find({
+			$or: [
+				{ mainUser: new mongoose.Types.ObjectId(userId) },
+				{ 'users._id': new mongoose.Types.ObjectId(userId) },
+			],
+		});
+		console.log({ groups }, new mongoose.Types.ObjectId(userId));
+		return await Group.find({
+			$or: [{ mainUser: userId }, { 'users._id': userId }],
+		})
+			.populate('mainUser', userDataFields)
+			.populate('users', userDataFields)
+			.populate('dueDate')
+			.skip(skip)
+			.limit(limit);
+	}
+
+	// find a group
+	async findOne(id: string, authuser: IUser): Promise<IGroupData> {
+		// validate the group ID
 		if (!isValidObjectId(id)) {
 			throw new CustomError('Invalid ID', 'Group findOne');
 		}
 		const group = await Group.findById(id)
-			.populate('mainUser')
-			.populate('users')
+			.populate('mainUser', userDataFields)
+			.populate('users', userDataFields)
 			.populate('dueDate')
-			.populate('exclusions.userId')
-			.populate('exclusions.excludedUsers')
-			.populate('associations.userId')
-			.populate('associations.associatedUser');
+			.populate('associations.userId', userDataFields)
+			.populate('associations.associatedUser', userDataFields);
+		// check if the user is in the group
+		if (
+			authuser &&
+			authuser._id !== group.mainUser._id.toString() &&
+			!group.users.some((u: IUser) => u._id.toString() === authuser._id)
+		) {
+			throw new CustomError('User not in the group', 'Group findOne');
+		}
+		// if the user is not the main user, we remove the exclusions and associations and keep only the user's one
+		// if the user is not logged in, we remove the exclusions and associations
+		// if the user is the main user, we let the exclusions and associations
+		if (authuser && group.mainUser._id.toString() !== authuser._id) {
+			group.associations = [group.associations.find((a: any) => a.userId._id.toString() === authuser._id)];
+		} else if (!authuser) {
+			group.exclusions = undefined;
+			group.associations = undefined;
+		}
 		if (!group) {
 			throw new CustomError('Group not found', 'Group findOne');
 		}

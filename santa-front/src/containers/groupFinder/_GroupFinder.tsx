@@ -58,7 +58,6 @@ const GroupFinder: React.FC<{}> = () => {
 
 	useEffect(() => {
 		if (authUser) {
-			console.log('here', authUser);
 			setSelectedUser(authUser);
 		}
 	}, [authUser]);
@@ -96,7 +95,8 @@ const GroupFinder: React.FC<{}> = () => {
 		} else {
 			setSelectedUser(null);
 		}
-		console.log({ user })
+		authState.user = {...authState.user, ...user};
+		console.log(authState.user);
 		if (user?.registered) {
 			setAuthFormType('login');
 		} else if (!authUser) {
@@ -111,7 +111,7 @@ const GroupFinder: React.FC<{}> = () => {
 			let userLoggedInData;
 
 			if (authFormType === 'signup') {
-				userLoggedInData = await AuthService.signUp(authState.user.name, authState.user.email, authState.user.password);
+				userLoggedInData = await AuthService.signUp(authState.user.name, authState.user.email, authState.user.password, authState.user._id);
 			} else if (authFormType === 'login') {
 				userLoggedInData = await AuthService.logIn(authState.user.email, authState.user.password);
 			}
@@ -150,7 +150,9 @@ const GroupFinder: React.FC<{}> = () => {
 			const form = e.target as HTMLFormElement;
 			const groupId = form.groupId.value;
 
-			navigate(`/group/${groupId}`);
+			if (groupExists) {
+				navigate(`/group/${groupId}`);
+			}
 		} catch (err) {
 			console.error('Group creation error:', err);
 		};
@@ -180,7 +182,7 @@ const GroupFinder: React.FC<{}> = () => {
 						</Select>
 						{authFormType === 'signup' &&
 							<>
-								<div className="mb-2 block text-center w-full font-bold">
+								<div className="mb-2 block text-center w-full font-bold text-dark">
 									Inscription
 								</div>
 								<SignUpForm dispInputName={false} includeForm={false} state={authState} dispatchState={dispatchAuthState} includeTitle={false} displayButton={false} />
@@ -197,7 +199,7 @@ const GroupFinder: React.FC<{}> = () => {
 					</>
 				}
 				<div className="w-full lg:w-1/2 mx-auto">
-					<Button type="submit" className="btn-primary mx-auto btn" disabled={!isIdValid || !selectedUser}>Accéder au groupe</Button>
+					<Button type="submit" className="btn-primary mx-auto btn" disabled={!isIdValid || !selectedUser || !groupExists}>Accéder au groupe</Button>
 				</div>
 			</form>
 		</Card>

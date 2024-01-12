@@ -3,9 +3,9 @@ import User from '../../types/User';
 import { AuthContext } from '../../contexts/AuthContext';
 import FormGroupEditionActions from '../../types/FormGroupEditionActions.enum';
 import Group from '../../types/Group';
-import GroupUsersAssociations from './GroupUsersAssociations';
 import { Card, Datepicker, TextInput } from 'flowbite-react';
 import { useNavigate } from 'react-router-dom';
+import GroupUserAssociation from './GroupUserAssociation';
 
 type GroupManagerProps = {
 	group: Group;
@@ -54,7 +54,8 @@ const GroupManager: React.FC<GroupManagerProps> = ({ group }: GroupManagerProps)
 
 	useEffect(() => {
 		const updateServerValues = async () => {
-			await fetch(`${process.env.REACT_APP_API_URL}/group/${group._id}`, {
+			const accessToken = localStorage.getItem('access_token');
+			await fetch(`${process.env.REACT_APP_API_URL}/group/${group._id}?access_token=${accessToken}`, {
 				method: 'PUT',
 				headers: {
 					'Content-Type': 'application/json'
@@ -89,6 +90,7 @@ const GroupManager: React.FC<GroupManagerProps> = ({ group }: GroupManagerProps)
 								value={groupState.name}
 								onChange={(event) => handleInputChange(event?.target.value, 'name')}
 								disabled={authUser?._id !== groupState.mainUser._id}
+								
 							/>
 						</div>
 					</div>
@@ -111,7 +113,17 @@ const GroupManager: React.FC<GroupManagerProps> = ({ group }: GroupManagerProps)
 						</div>
 					</div>
 					<hr className="border-0 border-b border-gray-300 my-4" />
-					<GroupUsersAssociations associations={groupState.associations} />
+					<div className="flex flex-row items-start">
+						<div className="flex flex-col w-1/2">
+							<h2 className="card-title text-primary">Associations des utilisateurs</h2>
+							<div className="card-desc">Chaque membre du groupe doit faire un cadeau à l'autre membre qui lui ait associé</div>
+						</div>
+						<Card className="w-1/2">
+							{groupState.associations?.map((association: any, idx: number) =>
+								<GroupUserAssociation key={`association-${idx}`} association={association} />
+							)}
+						</Card>
+					</div>
 				</div>
 			</Card>
 		</>
