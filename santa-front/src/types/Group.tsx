@@ -6,12 +6,12 @@ type Group = {
 	mainUser: User;
 	users: User[];
 	exclusions: {
-		userId: string; // _id of the user
-		excludedUsers: string[]; // name of the excluded users
+		userId: User;
+		excludedUsers: User[];
 	}[];
 	associations: {
-		userId: string; // _id of the user
-		associatedUser: string; // name of the associated user
+		userId: User;
+		associatedUser: User;
 	}[];
 	dueDate: Date;
 }

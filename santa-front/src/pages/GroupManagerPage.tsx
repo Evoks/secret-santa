@@ -14,13 +14,9 @@ export const loader: LoaderFunction = async ({ params }: LoaderFunctionArgs) => 
 	return { group: data.data };
 };
 
-const ManageGroup: React.FC = () => {
+const GroupManagerPage: React.FC = () => {
 	const data: any = useLoaderData();
-
-	if (!data.group) {
-		return <Title title={"⚠️ Groupe innacessible"} />;
-	}
-
+	
 	return (
 		<>
 			<Title title={"Gestion du groupe"} />
@@ -29,4 +25,4 @@ const ManageGroup: React.FC = () => {
 	);
 }
 
-export default ManageGroup;
+export default GroupManagerPage;

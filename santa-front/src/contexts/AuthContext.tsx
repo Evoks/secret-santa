@@ -18,6 +18,7 @@ type AuthContextWrapperProps = {
 
 const AuthContextWrapper: React.FC<AuthContextWrapperProps> = ({ children }) => {
 	const [authUser, setAuthUser] = useState<User | null>(null);
+	
 	useEffect(() => {
 		const checkUserLoggedIn = async () => {
 			const user = localStorage.getItem('user');
