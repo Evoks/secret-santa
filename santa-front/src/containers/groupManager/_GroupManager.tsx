@@ -6,25 +6,12 @@ import Group from '../../types/Group';
 import { Card, Datepicker, TextInput } from 'flowbite-react';
 import { useNavigate } from 'react-router-dom';
 import GroupUserAssociation from './GroupUserAssociation';
-import Title from '../../components/Title';
+import GroupManagerState from '../../types/GroupManager';
+import GroupService from '../../services/group.service';
+import { useQueryClient } from '@tanstack/react-query';
 
 type GroupManagerProps = {
 	group: Group;
-}
-
-interface GroupManagerState {
-	name?: string;
-	users: User[];
-	mainUser: User;
-	exclusions: {
-		userId: string;
-		excludedUsers: string[];
-	}[];
-	dueDate: Date;
-	associations: {
-		userId: string,
-		associatedUser: string;
-	}[];
 }
 
 function groupReducer(state: GroupManagerState, action: { type: string, payload: any }) {
@@ -38,6 +25,7 @@ function groupReducer(state: GroupManagerState, action: { type: string, payload:
 
 const GroupManager: React.FC<GroupManagerProps> = ({ group }: GroupManagerProps) => {
 	const navigate = useNavigate();
+	const queryClient = useQueryClient();
 	const { authUser } = useContext(AuthContext);
 	const [groupState, dispatchGroupState] = useReducer(groupReducer, group);
 	const [initialGroupState, setInitialGroupState] = useState<string>(JSON.stringify(group));
@@ -55,20 +43,16 @@ const GroupManager: React.FC<GroupManagerProps> = ({ group }: GroupManagerProps)
 
 	useEffect(() => {
 		const updateServerValues = async () => {
-			const accessToken = localStorage.getItem('access_token');
-			await fetch(`${process.env.REACT_APP_API_URL}/group/${groupState?._id}?access_token=${accessToken}`, {
-				method: 'PUT',
-				headers: {
-					'Content-Type': 'application/json'
-				},
-				body: JSON.stringify(groupState)
-			});
+			await GroupService.update(groupState.id, groupState);
 			setInitialGroupState(JSON.stringify(groupState));
+			// reset the cache for the group
+			queryClient.invalidateQueries({queryKey: ['group', groupState.id]});
+			queryClient.invalidateQueries({queryKey: ['groups']});
 		}
 		if (initialGroupState !== JSON.stringify(groupState)) {
 			updateServerValues();
 		}
-	}, [groupState, initialGroupState])
+	}, [groupState, initialGroupState, queryClient])
 
 	const handleInputChange = async (value: any, property: string) => {
 		const payload = { [property]: value };

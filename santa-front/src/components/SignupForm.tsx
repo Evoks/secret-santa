@@ -33,8 +33,6 @@ const SignUpForm: React.FC<SignUpFormProps> = ({ state, dispatchState, displayBu
 	const [passwordCheck, setPasswordCheck] = useState<string>('');
 	const [isLoading, setIsLoading] = useState<boolean>(false);
 
-	console.log({state});
-
 	const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
 		e.preventDefault();
 		if (state[propertyUserName].password !== passwordCheck) {

@@ -1,7 +1,10 @@
+import { Spinner } from "flowbite-react";
 
 const Loading: React.FC<any> = ():any => {
 	return (
-		<div>Chargement de l'application...</div>
+		<div className="flex flex-row justify-center items-center w-full h-[100vh] ">
+			<Spinner />
+		</div>
 	);
 }
 

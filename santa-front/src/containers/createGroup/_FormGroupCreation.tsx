@@ -17,9 +17,11 @@ import { faArrowLeft } from '@fortawesome/free-solid-svg-icons';
 import AuthActions from '../../types/AuthActions.enum';
 import AuthService from '../../services/auth.service';
 import { formGroupCreationReducer, initialState } from './FormGroupCreation.state';
+import { useQueryClient } from '@tanstack/react-query';
 
 const FormGroupCreation: React.FC = () => {
 	const navigation = useNavigate();
+	const queryClient = useQueryClient();
 	const { authUser, setAuthUser } = useContext(AuthContext);
 	const { addToast } = useContext(ToastContext);
 
@@ -172,6 +174,8 @@ const FormGroupCreation: React.FC = () => {
 				const createGroupData = await resCreateGroup.json();
 
 				if (createGroupData.success) {
+					// we invalidate the groups query to refresh the list next time we go to the groups page
+					queryClient.invalidateQueries({queryKey: ['groups']});
 					// Redirect to the group page
 					navigation(`/group/${createGroupData.data._id}`);
 				} else {

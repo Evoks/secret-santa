@@ -3,10 +3,11 @@
 // Path: src/pages/Login.tsx
 
 import { useNavigate } from 'react-router-dom';
-import { useReducer } from 'react';
-import LoginSignUpForm from '../components/LoginSignUpForm';
+import { Suspense, lazy, useReducer } from 'react';
 import AuthActions from '../types/AuthActions.enum';
 import User from '../types/User';
+import { Loading } from '../components/structure';
+const LoginSignUpForm = lazy(() => import('../components/LoginSignUpForm'));
 
 type LoginSignUpReducerState = {
 	user: User,
@@ -42,9 +43,9 @@ const LoginPage: React.FC = () => {
 	}
 
 	return (
-		<>
+		<Suspense fallback={<Loading />}>
 			<LoginSignUpForm includeTitle={true} includeCard={true} displayButton={true} state={state} dispatchState={dispatchState} loginHandleSubmitCallback={loginHandleSubmitCallback} signUpHandleSubmitCallback={signUpHandleSubmitCallback} />
-		</>
+		</Suspense>
 	);
 }
 

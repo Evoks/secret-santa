@@ -3,6 +3,7 @@ import { AuthContext } from '../../contexts/AuthContext';
 import { Dropdown } from 'flowbite-react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSignOut, faUser, faUserGroup } from '@fortawesome/free-solid-svg-icons';
+import { Link } from 'react-router-dom';
 
 const Header: React.FC<any> = (): any => {
 	const { authUser } = useContext(AuthContext);
@@ -11,12 +12,12 @@ const Header: React.FC<any> = (): any => {
 		<header className="body-font bg-white/5">
 			<div className="mx-auto container flex flex-col max-w-[1024px]">
 				<div className="container mx-auto flex flex-wrap py-5 flex-col md:flex-row items-center">
-					<a href="/" className="flex font-bold items-center mb-4 md:mb-0">
+					<Link to="/" className="flex font-bold items-center mb-4 md:mb-0">
 						<span className="ml-3 text-3xl text-gradient-blue-purple">Secret Santa</span>
-					</a>
+					</Link>
 					<nav className="md:ml-auto flex flex-wrap items-center text-base justify-center">
-						<a href="/" className="text-white mr-5 hover:text-gray-400">Créer un groupe</a>
-						<a href="/group" className="text-white mr-5 hover:text-gray-400">Retrouver un groupe</a>
+						<Link to="/" className="text-white mr-5 hover:text-gray-400">Créer un groupe</Link>
+						<Link to="/group" className="text-white mr-5 hover:text-gray-400">Retrouver un groupe</Link>
 						{authUser && (
 							<>
 								<Dropdown color="gray" label={authUser.name} dismissOnClick={false}>
@@ -31,7 +32,7 @@ const Header: React.FC<any> = (): any => {
 											</span>
 										</div>
 									</Dropdown.Header>
-									<Dropdown.Item href={`/my-groups/${authUser._id}`} className=" hover:text-gradient-blue-purple">
+									<Dropdown.Item href={`/my-groups`} className=" hover:text-gradient-blue-purple">
 										<FontAwesomeIcon icon={faUserGroup} className="mr-5 text-gray-500" />
 										<div>Mes groupes</div>
 									</Dropdown.Item>
@@ -44,7 +45,7 @@ const Header: React.FC<any> = (): any => {
 							</>
 						)}
 						{!authUser && (
-							<a href="/login" className="mr-5 hover:text-gradient-blue-purple">Se connecter</a>
+							<Link to="/login" className="mr-5 hover:text-gradient-blue-purple">Se connecter</Link>
 						)}
 					</nav>
 				</div>

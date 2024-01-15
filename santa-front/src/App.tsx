@@ -3,14 +3,21 @@ import { RouterProvider, createBrowserRouter } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Body, ErrorPage } from './components/structure';
 // pages
-import { Error, Layout, HomePage, GroupManager, UserGroups, GroupFinder, LoginPage, Logout } from './pages/';
+import { Error, Layout, HomePage, GroupManager, UserGroups, GroupFinder, LoginPage, Logout } from './routes';
 // loaders
-import { loader as groupLoader } from './pages/GroupManagerPage';
-import { loader as userGroupsLoader } from './pages/UserGroupsPage';
+import { loader as groupLoader } from './routes/GroupManagerPage';
+import { loader as userGroupsLoader } from './routes/UserGroupsPage';
 import AuthContextWrapper from './contexts/AuthContext';
 import ToastContextWrapper from './contexts/ToastContext';
+import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+	defaultOptions: {
+		queries: {
+			staleTime:	1000 * 60 * 5, // 5 minutes
+		}
+	}
+});
 
 const router = createBrowserRouter([
 	{
@@ -32,13 +39,13 @@ const router = createBrowserRouter([
 				path: '/group/:id',
 				element: <GroupManager />,
 				errorElement: <ErrorPage />,
-				loader: groupLoader,
+				loader: groupLoader(queryClient),
 			},
 			{
-				path: '/my-groups/:authUserId',
+				path: '/my-groups',
 				element: <UserGroups />,
 				errorElement: <ErrorPage />,
-				loader: userGroupsLoader,
+				loader: userGroupsLoader(queryClient),
 			},
 			{
 				path: '/login',
@@ -77,6 +84,7 @@ const App: React.FC = () => {
 						</Body>
 					</div>
 				</div>
+				<ReactQueryDevtools initialIsOpen={false} />
 			</CombinedContexts>
 		</QueryClientProvider>
 	);

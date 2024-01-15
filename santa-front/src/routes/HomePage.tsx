@@ -1,9 +1,12 @@
-import { lazy } from 'react';
+import { Suspense, lazy } from 'react';
+import { Loading } from '../components/structure';
 const FormGroupCreation = lazy(() => import('../containers/createGroup/_FormGroupCreation'));
 
 const HomePage: React.FC = () => {
 	return (
-		<FormGroupCreation />
+		<Suspense fallback={<Loading />}>
+			<FormGroupCreation />
+		</Suspense>
 	);
 }
 

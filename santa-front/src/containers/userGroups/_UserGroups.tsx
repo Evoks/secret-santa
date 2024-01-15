@@ -1,5 +1,6 @@
 import { Card } from "flowbite-react";
 import Group from "../../types/Group";
+import { Link } from "react-router-dom";
 
 type GroupManagerProps = {
 	groups: Group[];
@@ -12,7 +13,7 @@ const UserGroups: React.FC<GroupManagerProps> = ({ groups }: GroupManagerProps) 
 			{groups.map((group: Group, index: number) => (
 				<div key={group._id} className="w-1/3">
 					<Card className="m-1">
-						<a className="flex flex-row items-center" href={'/group/' + group._id}>
+						<Link to={'/group/' + group._id} className="flex flex-row items-center">
 							<div className="flex flex-col">
 								<h2 className="card-title text-primary">Groupe</h2>
 								<div className="text-dark font-semibold text-sm mb-1">
@@ -28,7 +29,7 @@ const UserGroups: React.FC<GroupManagerProps> = ({ groups }: GroupManagerProps) 
 									Tirage le <span className="font-semibold">{new Date(group.dueDate).toLocaleDateString()}</span>
 								</div>
 							</div>
-						</a>
+						</Link>
 					</Card >
 				</div>
 			))}

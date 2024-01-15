@@ -96,7 +96,6 @@ const GroupFinder: React.FC<{}> = () => {
 			setSelectedUser(null);
 		}
 		authState.user = {...authState.user, ...user};
-		console.log(authState.user);
 		if (user?.registered) {
 			setAuthFormType('login');
 		} else if (!authUser) {
