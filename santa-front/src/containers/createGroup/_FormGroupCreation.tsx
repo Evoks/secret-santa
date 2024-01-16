@@ -160,7 +160,7 @@ const FormGroupCreation: React.FC = () => {
 				const body = {
 					name: state.groupName,
 					mainUser: usersData[0]._id,
-					users: [state.mainUser, ...state.users],
+					users: usersData,
 					dueDate: state.dueDate.getTime(),
 					exclusions: usersData.map((user: User) => { return { userId: user._id, excludedUsers: user.excludedUsers } })
 				};

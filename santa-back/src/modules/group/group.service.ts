@@ -49,30 +49,34 @@ export class GroupService {
 		// associate a user to each user
 		const associations: IAssociationData[] = [];
 		try {
-			groupData.users.map(async (groupUser: IUser) => {
-				const userExcludedUsersList = exclusions.find((e) => e.userId === groupUser._id)?.excludedUsers || [];
-				const otherUsers = groupData.users.filter((u: IUser) => {
-					return u._id !== groupUser._id;
-				});
-				console.log(otherUsers);
-				const possibleAssociations = otherUsers.filter((otherUser: IUser) => {
-					return (
-						userExcludedUsersList.findIndex((e) => e._id === otherUser._id) === -1 &&
-						associations.findIndex((a) => a.associatedUser._id === otherUser._id) === -1
-					);
-				});
-				if (possibleAssociations.length === 0) {
-					return;
-				}
-				const randomIndex = Math.floor(Math.random() * possibleAssociations.length);
-				const associatedUser = possibleAssociations[randomIndex];
-				associations.push({
-					userId: groupUser._id,
-					associatedUser,
-				});
-			});
+			await Promise.all(
+				groupData.users.map(async (groupUser: IUser) => {
+					const userExcludedUsersList =
+						exclusions.find((e) => e.userId === groupUser._id)?.excludedUsers.map((u: IUser) => u._id) ||
+						[];
+					const otherUsers = groupData.users.filter((u: IUser) => {
+						return u._id !== groupUser._id;
+					});
+					// we need to exclude the user that are in the exclusion list and the user that are already associated
+					const possibleAssociations = otherUsers.filter((otherUser: IUser) => {
+						return (
+							!userExcludedUsersList.includes(otherUser._id) &&
+							!associations.some((a) => a.associatedUser._id === otherUser._id)
+						);
+					});
+					if (possibleAssociations.length === 0) {
+						return;
+					}
+					const randomIndex = Math.floor(Math.random() * possibleAssociations.length);
+					const associatedUser = possibleAssociations[randomIndex];
+					associations.push({
+						userId: groupUser._id,
+						associatedUser,
+					});
+				}),
+			);
 		} catch (e) {
-			console.error('here', e, associations);
+			console.error(e, associations);
 		}
 		if (associations.length !== groupData.users.length) {
 			throw new CustomError('Could not create group, cannot create associations object', 'Group creation');

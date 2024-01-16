@@ -3,6 +3,7 @@ import GroupManager from '../_GroupManager';
 import { AuthContext } from '../../../contexts/AuthContext';
 import User from '../../../types/User';
 import Group from '../../../types/Group';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 const mockNavigate = jest.fn();
 
@@ -10,6 +11,14 @@ jest.mock('react-router-dom', () => ({
 	...jest.requireActual('react-router-dom'), // import and spread all the actual exported values
 	useNavigate: () => mockNavigate, // return the mock navigate function
 }));
+
+const queryClient = new QueryClient({
+	defaultOptions: {
+		queries: {
+			staleTime: 1000 * 60 * 5, // 5 minutes
+		}
+	}
+});
 
 // Test data
 // Mock group data
@@ -119,9 +128,11 @@ describe('GroupManager Component', () => {
 	const renderComponent = (group: Group, authUser: User | null) => {
 		const setAuthUser = jest.fn();
 		return render(
-			<AuthContext.Provider value={{ authUser, setAuthUser }}>
-				<GroupManager group={group} />
-			</AuthContext.Provider>
+			<QueryClientProvider client={queryClient}>
+				<AuthContext.Provider value={{ authUser, setAuthUser }}>
+					<GroupManager group={group} />
+				</AuthContext.Provider>
+			</QueryClientProvider>
 		);
 	};
 
@@ -137,7 +148,7 @@ describe('GroupManager Component', () => {
 		const inputGroupName = screen.getByTestId('groupName');
 		expect(inputGroupName).toBeInTheDocument();
 		expect(inputGroupName).toBeEnabled();
-		
+
 		const inputGroupDueDate = screen.getByTestId('dueDate');
 		expect(inputGroupDueDate).toBeInTheDocument();
 		expect(inputGroupDueDate).toBeEnabled();
