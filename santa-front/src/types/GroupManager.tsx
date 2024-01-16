@@ -1,6 +1,7 @@
 import User from "./User";
 
 type GroupManagerState = {
+	_id: string;
 	name?: string;
 	users: User[];
 	mainUser: User;

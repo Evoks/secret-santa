@@ -43,10 +43,10 @@ const GroupManager: React.FC<GroupManagerProps> = ({ group }: GroupManagerProps)
 
 	useEffect(() => {
 		const updateServerValues = async () => {
-			await GroupService.update(groupState.id, groupState);
+			await GroupService.update(groupState._id, groupState);
 			setInitialGroupState(JSON.stringify(groupState));
 			// reset the cache for the group
-			queryClient.invalidateQueries({queryKey: ['group', groupState.id]});
+			queryClient.invalidateQueries({queryKey: ['group', groupState._id]});
 			queryClient.invalidateQueries({queryKey: ['groups']});
 		}
 		if (initialGroupState !== JSON.stringify(groupState)) {
