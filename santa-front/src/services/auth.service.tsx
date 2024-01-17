@@ -12,7 +12,7 @@ const AuthService = {
 			return false;
 		const urlQueryData = { access_token };
 		const urlQuery = new URLSearchParams(urlQueryData).toString();
-		const response = await fetch(`${process.env.REACT_APP_API_URL}/auth/check?${urlQuery}`, {
+		const response = await fetch(`${import.meta.env.VITE_APP_API_URL}/auth/check?${urlQuery}`, {
 			headers: {
 				'Content-Type': 'application/json'
 			},
@@ -26,7 +26,7 @@ const AuthService = {
 	},
 
 	logIn: async (email: string, password: string): Promise<LoginResponse> => {
-		const response = await fetch(`${process.env.REACT_APP_API_URL}/auth/login`, {
+		const response = await fetch(`${import.meta.env.VITE_APP_API_URL}/auth/login`, {
 			method: 'POST',
 			headers: {
 				'Content-Type': 'application/json'
@@ -42,7 +42,7 @@ const AuthService = {
 	},
 
 	signUp: async (name: string, email: string, password: string, userId: string | null = null) => {
-		const response = await fetch(`${process.env.REACT_APP_API_URL}/user`, {
+		const response = await fetch(`${import.meta.env.VITE_APP_API_URL}/user`, {
 			method: 'POST',
 			headers: {
 				'Content-Type': 'application/json'

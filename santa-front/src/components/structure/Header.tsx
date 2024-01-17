@@ -13,7 +13,10 @@ const Header: React.FC<any> = (): any => {
 			<div className="mx-auto container flex flex-col max-w-[1024px]">
 				<div className="container mx-auto flex flex-wrap py-5 flex-col md:flex-row items-center">
 					<Link to="/" className="flex font-bold items-center mb-4 md:mb-0">
-						<span className="ml-3 text-3xl text-gradient-blue-purple">Secret Santa</span>
+						<span className="ml-3 text-3xl text-gradient-blue-purple flex flex-row">
+							<img src="/128.png" alt="Logo" className="w-10 h-10 mr-1" />
+							Secret Santa
+						</span>
 					</Link>
 					<nav className="md:ml-auto flex flex-wrap items-center text-base justify-center">
 						<Link to="/" className="text-white mr-5 hover:text-gray-400">Créer un groupe</Link>

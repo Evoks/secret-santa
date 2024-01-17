@@ -64,7 +64,7 @@ const GroupFinder: React.FC<{}> = () => {
 
 
 	const checkGroupValidity = async (groupId: string) => {
-		const response = await fetch(`${process.env.REACT_APP_API_URL}/group/check/${groupId}`);
+		const response = await fetch(`${import.meta.env.VITE_APP_API_URL}/group/check/${groupId}`);
 		if (!response.ok) {
 			console.error('Group not found');
 			return;

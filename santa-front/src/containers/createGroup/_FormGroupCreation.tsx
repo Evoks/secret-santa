@@ -26,10 +26,10 @@ const FormGroupCreation: React.FC = () => {
 	const { addToast } = useContext(ToastContext);
 
 	const [currentStepValidityErrors, setCurrentStepValidityErrors] = useState<string[]>([]);
-	
+
 	// Store the list of users in state
 	const [state, dispatchState] = useReducer(formGroupCreationReducer, initialState);
-	
+
 	// Define the steps array
 	const steps = useMemo(() => {
 		if (authUser) {
@@ -42,7 +42,7 @@ const FormGroupCreation: React.FC = () => {
 	// Effect for updating the main user when the authUser changes
 	useEffect(() => {
 		if (authUser) {
-			dispatchState({ type: AuthActions.UPDATE_MAIN_USER, payload:  { ...initialState.mainUser, ...authUser } });
+			dispatchState({ type: AuthActions.UPDATE_MAIN_USER, payload: { ...initialState.mainUser, ...authUser } });
 		}
 	}, [authUser]);
 
@@ -113,7 +113,7 @@ const FormGroupCreation: React.FC = () => {
 				const users = [state.mainUser, ...state.users];
 				const userCreationPromises = users.map(async (user: User) => {
 					if (!user._id) {
-						const resCreateUser = await fetch(`${process.env.REACT_APP_API_URL}/user`, {
+						const resCreateUser = await fetch(`${import.meta.env.VITE_APP_API_URL}/user`, {
 							method: 'POST',
 							headers: {
 								'Content-Type': 'application/json'
@@ -134,9 +134,15 @@ const FormGroupCreation: React.FC = () => {
 
 					return user;
 				});
-				const usersData = await Promise.all(userCreationPromises);
 
-				if (usersData.length !== users.length) {
+				const usersIds: { _id: string }[] = await Promise.all(userCreationPromises);
+				// we have to assign _id for each user using the data we got from the server
+				const usersData: User[] = [state.mainUser, ...state.users].map((user: User, index: number) => {
+					const usersId = usersIds[index];
+					return { ...user, _id: usersId._id };
+				});
+
+				if (usersIds.length !== users.length) {
 					addToast({ message: 'Une erreur est survenue lors de la création des utilisateurs', type: 'error' });
 					throw new Error('User creation error');
 				}
@@ -144,27 +150,26 @@ const FormGroupCreation: React.FC = () => {
 				// update user object in state with main user id
 				dispatchState({
 					type: AuthActions.UPDATE_MAIN_USER, payload: {
-						user: { ...state.mainUser, _id: usersData[0]._id }
+						user: usersData[0]
 					}
 				});
 				// update users object in state with users ids
 				dispatchState({
 					type: FormGroupCreationActions.UPDATE_USERS, payload: {
-						users: state.users.map((user: User, idx: number) => {
-							return { ...user, _id: usersData[idx + 1]?._id }
-						})
+						// remove main user from users list
+						users: usersData.slice(1)
 					}
 				});
 
 				// create group 
 				const body = {
 					name: state.groupName,
-					mainUser: usersData[0]._id,
+					mainUser: usersIds[0]._id,
 					users: usersData,
 					dueDate: state.dueDate.getTime(),
 					exclusions: usersData.map((user: User) => { return { userId: user._id, excludedUsers: user.excludedUsers } })
 				};
-				const resCreateGroup = await fetch(`${process.env.REACT_APP_API_URL}/group`, {
+				const resCreateGroup = await fetch(`${import.meta.env.VITE_APP_API_URL}/group`, {
 					method: 'POST',
 					headers: {
 						'Content-Type': 'application/json'
@@ -175,7 +180,7 @@ const FormGroupCreation: React.FC = () => {
 
 				if (createGroupData.success) {
 					// we invalidate the groups query to refresh the list next time we go to the groups page
-					queryClient.invalidateQueries({queryKey: ['groups']});
+					queryClient.invalidateQueries({ queryKey: ['groups'] });
 					// Redirect to the group page
 					navigation(`/group/${createGroupData.data._id}`);
 				} else {
