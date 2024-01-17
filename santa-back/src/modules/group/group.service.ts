@@ -135,6 +135,9 @@ export class GroupService {
 			.populate('associations.userId', userDataFields)
 			.populate('associations.associatedUser', userDataFields);
 		// check if the user is in the group
+		if (!group) {
+			throw new CustomError('Group not found', 'Group findOne');
+		}
 		if (
 			authuser &&
 			authuser._id !== group.mainUser._id.toString() &&
@@ -150,9 +153,6 @@ export class GroupService {
 		} else if (!authuser) {
 			group.exclusions = undefined;
 			group.associations = undefined;
-		}
-		if (!group) {
-			throw new CustomError('Group not found', 'Group findOne');
 		}
 		return group;
 	}

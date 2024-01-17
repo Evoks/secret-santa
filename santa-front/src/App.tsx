@@ -7,6 +7,7 @@ import { Error, Layout, HomePage, GroupManager, UserGroups, GroupFinder, LoginPa
 // loaders
 import { loader as groupLoader } from './routes/GroupManagerPage';
 import { loader as userGroupsLoader } from './routes/UserGroupsPage';
+import { loader as groupFinderLoader } from './routes/GroupFinderPage';
 import AuthContextWrapper from './contexts/AuthContext';
 import ToastContextWrapper from './contexts/ToastContext';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
@@ -34,6 +35,7 @@ const router = createBrowserRouter([
 				path: '/group',
 				element: <GroupFinder />,
 				errorElement: <ErrorPage />,
+				loader: groupFinderLoader,
 			},
 			{
 				path: '/group/:id',

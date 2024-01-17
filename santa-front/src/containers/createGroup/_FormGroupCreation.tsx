@@ -18,6 +18,7 @@ import AuthActions from '../../types/AuthActions.enum';
 import AuthService from '../../services/auth.service';
 import { formGroupCreationReducer, initialState } from './FormGroupCreation.state';
 import { useQueryClient } from '@tanstack/react-query';
+import { FormGroupCreationContext } from './FormGroupCreation.context';
 
 const FormGroupCreation: React.FC = () => {
 	const navigation = useNavigate();
@@ -198,50 +199,52 @@ const FormGroupCreation: React.FC = () => {
 		<>
 			<Title title={"Générateur de Secret Santa"} subtitle={"Faites rapidement un tirage au sort par email ou WhatsApp."} />
 			<Card className="bg-frosty">
-				<form onSubmit={actionHandler} className="w-full max-w-[720px] mx-auto">
-					<StepIndicator steps={steps} currentStep={state.stepIdx} text={`Étape ${steps[state.stepIdx]} ${state.groupName}`} />
-					<div className="mb-8">
-						<h2 className="leading-7 font-bold text-center text-2xl text-gradient-blue-purple">
-							{
-								stepDescriptions[state.stepIdx] && ` ${stepDescriptions[state.stepIdx]}`
-							}
-						</h2>
-					</div>
-					<div className="flex flex-col mx-auto relative">
-						{/* STEP 1 - Set name and creator name */}
-						{steps[state.stepIdx] === 1 &&
-							<FormGroupCreationStep1 state={state} dispatchState={dispatchState} setCurrentStepValidityErrors={setCurrentStepValidityErrors} />
-						}
-						{/* STEP 2  - Add users to the group */}
-						{steps[state.stepIdx] === 2 &&
-							<FormGroupCreationStep2 state={state} dispatchState={dispatchState} setCurrentStepValidityErrors={setCurrentStepValidityErrors} />
-						}
-						{/* STEP 3 - Exclusions management */}
-						{steps[state.stepIdx] === 3 &&
-							<FormGroupCreationStep3 state={state} dispatchState={dispatchState} />
-						}
-						{/* STEP 4 - Main user authentication */}
-						{!authUser && steps[state.stepIdx] === 4 &&
-							<FormGroupCreationStep4 state={state} dispatchState={dispatchState} />
-						}
-						{/* actions buttons */}
-						<div className="flex flex-row w-full mt-8">
-							{/* go prev btn */}
-							{steps[state.stepIdx] > 1 &&
-								<div onClick={() => { changeStepIdxHandler(state.stepIdx - 1) }} className="w-1/6 btn btn-primary mb-2 mr-2">
-									<FontAwesomeIcon icon={faArrowLeft} />
-								</div>
-							}
-							{/* go next btn */}
-							<button disabled={currentStepValidityErrors.length > 0} className="w-5/6 btn btn-primary mb-2 flex-1">
-								{steps[state.stepIdx] < steps.length ? 'Continuer' : 'Créer le groupe'}
-							</button>
+				<FormGroupCreationContext.Provider value={{ state, dispatchState }}>
+					<form onSubmit={actionHandler} className="w-full max-w-[720px] mx-auto">
+						<StepIndicator steps={steps} currentStep={state.stepIdx} text={`Étape ${steps[state.stepIdx]} ${state.groupName}`} />
+						<div className="mb-8">
+							<h2 className="leading-7 font-bold text-center text-2xl text-gradient-blue-purple">
+								{
+									stepDescriptions[state.stepIdx] && ` ${stepDescriptions[state.stepIdx]}`
+								}
+							</h2>
 						</div>
-						{currentStepValidityErrors.length > 0 &&
-							<FormErrors errors={currentStepValidityErrors} />
-						}
-					</div>
-				</form>
+						<div className="flex flex-col mx-auto relative">
+							{/* STEP 1 - Set name and creator name */}
+							{steps[state.stepIdx] === 1 &&
+								<FormGroupCreationStep1 setCurrentStepValidityErrors={setCurrentStepValidityErrors} />
+							}
+							{/* STEP 2  - Add users to the group */}
+							{steps[state.stepIdx] === 2 &&
+								<FormGroupCreationStep2 setCurrentStepValidityErrors={setCurrentStepValidityErrors} />
+							}
+							{/* STEP 3 - Exclusions management */}
+							{steps[state.stepIdx] === 3 &&
+								<FormGroupCreationStep3 />
+							}
+							{/* STEP 4 - Main user authentication */}
+							{!authUser && steps[state.stepIdx] === 4 &&
+								<FormGroupCreationStep4 />
+							}
+							{/* actions buttons */}
+							<div className="flex flex-row w-full mt-8">
+								{/* go prev btn */}
+								{steps[state.stepIdx] > 1 &&
+									<div onClick={() => { changeStepIdxHandler(state.stepIdx - 1) }} className="w-1/6 btn btn-primary mb-2 mr-2">
+										<FontAwesomeIcon icon={faArrowLeft} />
+									</div>
+								}
+								{/* go next btn */}
+								<button disabled={currentStepValidityErrors.length > 0} className="w-5/6 btn btn-primary mb-2 flex-1">
+									{steps[state.stepIdx] < steps.length ? 'Continuer' : 'Créer le groupe'}
+								</button>
+							</div>
+							{currentStepValidityErrors.length > 0 &&
+								<FormErrors errors={currentStepValidityErrors} />
+							}
+						</div>
+					</form>
+				</FormGroupCreationContext.Provider>
 			</Card>
 		</>
 	);

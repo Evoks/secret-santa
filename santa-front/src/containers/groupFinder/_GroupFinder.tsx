@@ -42,13 +42,17 @@ function formGroupCreationReducer(state: FormGroupFinderState, action: { type: s
 	}
 }
 
+type GroupFinderProps = {
+	data: { groupId: string };
+}
 
-const GroupFinder: React.FC<{}> = () => {
+
+const GroupFinder: React.FC<GroupFinderProps> = ({ data }: GroupFinderProps) => {
 	const navigate = useNavigate();
 	const { authUser, setAuthUser } = useContext(AuthContext);
 	const { addToast } = useContext(ToastContext);
 
-	const [groupId, setGroupId] = useState('65966e4393228568e618e0dd');
+	const [groupId, setGroupId] = useState(data.groupId);
 	const [isIdValid, setIsIdValid] = useState(true);
 	const [groupExists, setGroupExists] = useState(false);
 	const [groupUsers, setGroupUsers] = useState<User[]>([]);
@@ -95,7 +99,7 @@ const GroupFinder: React.FC<{}> = () => {
 		} else {
 			setSelectedUser(null);
 		}
-		authState.user = {...authState.user, ...user};
+		authState.user = { ...authState.user, ...user };
 		if (user?.registered) {
 			setAuthFormType('login');
 		} else if (!authUser) {
@@ -165,7 +169,7 @@ const GroupFinder: React.FC<{}> = () => {
 						<Label htmlFor="groupId" value="Identifiant du groupe" />
 					</div>
 					<div className="mb-2">
-						<TextInput placeholder="ex: 6581605d394a6586d9a124bc" color={isIdValid ? 'valid' : 'gray'} value={groupId} onChange={handleInputChange} name="groupId" />
+						<TextInput placeholder="ex: 6581605d394a6586d9a124bc" color={isIdValid ? 'success' : 'gray'} value={groupId} onChange={handleInputChange} name="groupId" />
 					</div>
 				</div>
 				{groupExists &&

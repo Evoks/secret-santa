@@ -1,15 +1,15 @@
-import { useState } from 'react';
+import { useContext, useState } from 'react';
 import InputGroupUserExclusion from './InputGroupUserExclusion';
 import ModalGroupUserExclusion from './ModalGroupUserExclusion';
 import User from '../../types/User';
 import FormGroupCreationActions from '../../types/FormGroupCreationActions.enum';
+import { FormGroupCreationContext } from './FormGroupCreation.context';
 
-type FormGroupCreationStep3Props = {
-	state: any;
-	dispatchState: any;
-}
 
-const FormGroupCreationStep3: React.FC<FormGroupCreationStep3Props> = ({ state, dispatchState }: any) => {
+
+const FormGroupCreationStep3: React.FC = () => {
+	const { state, dispatchState } = useContext(FormGroupCreationContext);
+	
 	const [enableExclusions, setEnableExclusions] = useState<boolean>(false);
 	const [selectedUser, setSelectedUser] = useState<User | null>(null);
 

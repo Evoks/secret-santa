@@ -1,15 +1,16 @@
 import FormActionTypes from '../../types/FormGroupEditionActions.enum';
 import { Datepicker, TextInput } from 'flowbite-react';
 import AuthActions from '../../types/AuthActions.enum';
-import { useEffect } from 'react';
+import { useContext, useEffect } from 'react';
+import { FormGroupCreationContext } from './FormGroupCreation.context';
 
 type FormGroupCreationStep1Props = {
-	state: any;
-	dispatchState: any;
 	setCurrentStepValidityErrors: any;
 }
 
-const FormGroupCreationStep1: React.FC<FormGroupCreationStep1Props> = ({ state, dispatchState, setCurrentStepValidityErrors }: FormGroupCreationStep1Props) => {
+const FormGroupCreationStep1: React.FC<FormGroupCreationStep1Props> = ({ setCurrentStepValidityErrors }: FormGroupCreationStep1Props) => {
+	const { state, dispatchState } = useContext(FormGroupCreationContext);
+	
 	const handleGroupNameInputChange = (value: string) => {
 		dispatchState({ type: FormActionTypes.UPDATE_GROUP_NAME, payload: { name: value } });
 	};

@@ -1,7 +1,3 @@
-// create a Login component that will be used to login to the application
-//
-// Path: src/pages/Login.tsx
-
 import { useContext, useState } from 'react';
 import { Button, Card, Label, TextInput } from 'flowbite-react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -12,6 +8,7 @@ import emailRegex from '../helpers/email.regex';
 import AuthActions from '../types/AuthActions.enum';
 import { ToastContext } from '../contexts/ToastContext';
 import Title from './Title';
+import InputPassword from './InputPassword';
 
 type LoginFormProps = {
 	state?: any;
@@ -29,6 +26,10 @@ const LoginForm: React.FC<LoginFormProps> = ({ state, dispatchState, displayButt
 	const { addToast } = useContext(ToastContext);
 
 	const [isLoading, setIsLoading] = useState<boolean>(false);
+
+	const setStateValue = (value: string, property: string) => {
+		dispatchState({ type: AuthActions.UPDATE_MAIN_USER, payload: { [property]: value } });
+	}
 
 	const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
 		try {
@@ -68,14 +69,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ state, dispatchState, displayButt
 			<div className="mb-2 block">
 				<Label htmlFor="password" value="Mot de passe" />
 			</div>
-			<TextInput
-				type="password"
-				placeholder="Renseignez votre mot de passe"
-				value={state[propertyUserName].password}
-				color={'gray'}
-				onChange={(e) => dispatchState({ type: AuthActions.UPDATE_MAIN_USER, payload: { password: e.target.value } })}
-				className="mb-4"
-			/>
+			<InputPassword value={state[propertyUserName].password} setValue={setStateValue} property={propertyUserName} />
 			{
 				displayButton &&
 				<div className="w-full flex flex-row justify-center">

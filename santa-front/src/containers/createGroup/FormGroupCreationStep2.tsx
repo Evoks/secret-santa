@@ -1,17 +1,18 @@
 // import { Formik, Form, Field, ErrorMessage } from 'formik';
 // import * as Yup from 'yup';
-import { useEffect } from 'react';
+import { useContext, useEffect } from 'react';
 import User from '../../types/User';
 import FormActionTypes from '../../types/FormGroupEditionActions.enum';
 import UserEditableInput from '../../components/UserEditableInput';
+import { FormGroupCreationContext } from './FormGroupCreation.context';
 
 interface FormGroupCreationStep2Props {
-	state: any;
-	dispatchState: any;
 	setCurrentStepValidityErrors: any;
 }
 
-const FormGroupCreationStep2: React.FC<FormGroupCreationStep2Props> = ({ state, dispatchState, setCurrentStepValidityErrors }: FormGroupCreationStep2Props) => {
+const FormGroupCreationStep2: React.FC<FormGroupCreationStep2Props> = ({ setCurrentStepValidityErrors }: FormGroupCreationStep2Props) => {
+	const { state, dispatchState } = useContext(FormGroupCreationContext);
+	
 	// Function to handle adding a user to the list
 	const addUser = () => {
 		dispatchState({ type: FormActionTypes.ADD_USER, payload: { name: '', excludedUsers: [] } });

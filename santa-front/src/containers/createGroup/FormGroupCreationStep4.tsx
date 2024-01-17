@@ -1,11 +1,10 @@
+import { useContext } from 'react';
 import LoginSignUpForm from '../../components/LoginSignUpForm';
+import { FormGroupCreationContext } from './FormGroupCreation.context';
 
-type FormGroupCreationStep4Props = {
-	state: any;
-	dispatchState: any;
-}
+const FormGroupCreationStep4: React.FC = () => {
+	const { state, dispatchState } = useContext(FormGroupCreationContext);
 
-const FormGroupCreationStep4: React.FC<FormGroupCreationStep4Props> = ({ state, dispatchState }: any) => {
 	return (
 		<>
 			<LoginSignUpForm includeForm={false} includeTitle={false} displayButton={false} propertyUserName={'mainUser'} state={state} dispatchState={dispatchState} />
