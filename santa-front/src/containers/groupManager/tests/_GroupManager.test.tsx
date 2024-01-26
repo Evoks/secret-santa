@@ -1,16 +1,21 @@
+/**
+ * @vitest-environment jsdom
+ */
 import { render, screen } from '@testing-library/react';
 import GroupManager from '../_GroupManager';
 import { AuthContext } from '../../../contexts/AuthContext';
 import User from '../../../types/User';
 import Group from '../../../types/Group';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { describe, expect, it, vi } from 'vitest';
 
-const mockNavigate = jest.fn();
-
-jest.mock('react-router-dom', () => ({
-	...jest.requireActual('react-router-dom'), // import and spread all the actual exported values
-	useNavigate: () => mockNavigate, // return the mock navigate function
-}));
+// Mock the navigate function
+const mockNavigate = vi.fn();
+await vi.importActual('react-router-dom');
+vi.mock('react-router-dom', async (_reactRouterDom) => {
+	// // return the mock navigate function
+	return { useNavigate: () => mockNavigate }
+});
 
 const queryClient = new QueryClient({
 	defaultOptions: {
@@ -126,7 +131,7 @@ const mockUserAuthUser = {
 describe('GroupManager Component', () => {
 	// Helper function to render the component with necessary context
 	const renderComponent = (group: Group, authUser: User | null) => {
-		const setAuthUser = jest.fn();
+		const setAuthUser = vi.fn();
 		return render(
 			<QueryClientProvider client={queryClient}>
 				<AuthContext.Provider value={{ authUser, setAuthUser }}>

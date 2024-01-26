@@ -6,6 +6,7 @@ import { useEffect, useState } from 'react';
 import SignUpForm from './SignupForm';
 import LoginForm from './LoginForm';
 import AuthActions from '../types/AuthActions.enum';
+import React from 'react';
 
 type LoginSignUpFormProps = {
 	state?: any;
@@ -14,7 +15,6 @@ type LoginSignUpFormProps = {
 	includeCard?: boolean;
 	dispatchState?: any;
 	displayButton: boolean;
-	propertyUserName?: string;
 	loginHandleSubmitCallback?: any;
 	signUpHandleSubmitCallback?: any;
 }
@@ -24,7 +24,7 @@ const formComponents: { [key: string]: React.FC<any> } = {
 	signup: SignUpForm,
 };
 
-const LoginSignUpForm: React.FC<LoginSignUpFormProps> = ({ state, dispatchState, displayButton, loginHandleSubmitCallback, signUpHandleSubmitCallback, propertyUserName = 'user', includeTitle = false, includeCard = false, includeForm = true }: LoginSignUpFormProps) => {
+const LoginSignUpForm: React.FC<LoginSignUpFormProps> = ({ state, dispatchState, displayButton, loginHandleSubmitCallback, signUpHandleSubmitCallback, includeTitle = false, includeCard = false, includeForm = true }: LoginSignUpFormProps) => {
 	const [formType, setFormType] = useState<string>('login');
 
 	const FormComponent = formComponents[formType];
@@ -37,20 +37,20 @@ const LoginSignUpForm: React.FC<LoginSignUpFormProps> = ({ state, dispatchState,
 	}, [dispatchState, formType]);
 
 	return (
-		<>
+		<React.Fragment>
 			{
 				// login or signup form
 			}
-			<FormComponent includeForm={includeForm} includeCard={includeCard} includeTitle={includeTitle} state={state} dispatchState={dispatchState} displayButton={displayButton} handleSubmitCallback={loginHandleSubmitCallback} propertyUserName={propertyUserName} />
+			<FormComponent includeForm={includeForm} includeCard={includeCard} includeTitle={includeTitle} state={state} dispatchState={dispatchState} displayButton={displayButton} handleSubmitCallback={loginHandleSubmitCallback} />
 			{
 				// handle button login / signup logic
 			}
 			<div className="w-full flex justify-center mt-4">
-				<button className="w-fit btn btn-xs btn-frosty mx-auto" onClick={handleButtonClick}>
+				<div className="w-fit btn btn-xs btn-frosty mx-auto" onClick={handleButtonClick}>
 					{buttonText}
-				</button>
+				</div>
 			</div>
-		</>
+		</React.Fragment>
 	);
 }
 

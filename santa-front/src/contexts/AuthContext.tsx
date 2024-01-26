@@ -1,6 +1,7 @@
 import { createContext, useEffect, useState } from "react";
 import User from "../types/User";
 import AuthService from "../services/auth.service";
+import { storage } from "../utils/storage";
 
 type AuthContextType = {
 	authUser: User | null;
@@ -21,7 +22,7 @@ const AuthContextWrapper: React.FC<AuthContextWrapperProps> = ({ children }) => 
 	
 	useEffect(() => {
 		const checkUserLoggedIn = async () => {
-			const user = localStorage.getItem('user');
+			const user = storage.getItem('user');
 			if (user) {
 				const userLoggedIn = await AuthService.authCheck();
 				if (userLoggedIn) {

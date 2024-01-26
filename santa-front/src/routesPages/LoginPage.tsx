@@ -14,12 +14,12 @@ type LoginSignUpReducerState = {
 }
 
 const initialState: LoginSignUpReducerState = {
-	user: { _id: null, name: '', password: '', email: '', excludedUsers: [] },
+	user: { _id: '', name: '', password: '', email: '', excludedUsers: [] },
 };
 
 function LoginSignUpReducer(state: LoginSignUpReducerState, action: { type: string, payload: any }) {
 	switch (action.type) {
-		case AuthActions.UPDATE_MAIN_USER:
+		case AuthActions.UPDATE_USER_ID:
 			return { ...state, user: { ...state.user, ...action.payload } };
 		default:
 			return state;

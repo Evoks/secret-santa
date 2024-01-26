@@ -6,9 +6,9 @@ const FormGroupCreationStep4: React.FC = () => {
 	const { state, dispatchState } = useContext(FormGroupCreationContext);
 
 	return (
-		<>
-			<LoginSignUpForm includeForm={false} includeTitle={false} displayButton={false} propertyUserName={'mainUser'} state={state} dispatchState={dispatchState} />
-		</>
+		<React.Fragment>
+			<LoginSignUpForm includeForm={false} includeTitle={false} displayButton={false} state={state} dispatchState={dispatchState} />
+		</React.Fragment>
 	);
 }
 

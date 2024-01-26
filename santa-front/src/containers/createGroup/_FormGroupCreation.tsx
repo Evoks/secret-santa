@@ -19,6 +19,7 @@ import AuthService from '../../services/auth.service';
 import { formGroupCreationReducer, initialState } from './FormGroupCreation.state';
 import { useQueryClient } from '@tanstack/react-query';
 import { FormGroupCreationContext } from './FormGroupCreation.context';
+import React from 'react';
 
 const FormGroupCreation: React.FC = () => {
 	const navigation = useNavigate();
@@ -43,7 +44,8 @@ const FormGroupCreation: React.FC = () => {
 	// Effect for updating the main user when the authUser changes
 	useEffect(() => {
 		if (authUser) {
-			dispatchState({ type: AuthActions.UPDATE_MAIN_USER, payload: { ...initialState.mainUser, ...authUser } });
+			dispatchState({ type: AuthActions.UPDATE_USER_ID, payload: authUser._id });
+			dispatchState({ type: FormGroupCreationActions.UPDATE_USER, payload: { index: 0, ...authUser } });
 		}
 	}, [authUser]);
 
@@ -73,20 +75,22 @@ const FormGroupCreation: React.FC = () => {
 	async function authenticationHandler() {
 		try {
 			let userLoggedInData;
+			const mainUser = state.users[0];
+			if (mainUser) {
+				if (!mainUser.email || !mainUser.password) {
+					addToast({ message: 'Vous devez renseigner une adresse email et un mot de passe', type: 'error' });
+					return false;
+				}
+				if (state.createAccount) {
+					userLoggedInData = await AuthService.signUp(mainUser.name, mainUser.email, mainUser.password);
+				} else {
+					userLoggedInData = await AuthService.logIn(mainUser.email, mainUser.password);
+				}
 
-			if (!state.mainUser.email || !state.mainUser.password) {
-				addToast({ message: 'Vous devez renseigner une adresse email et un mot de passe', type: 'error' });
-				return false;
-			}
-			if (state.createAccount) {
-				userLoggedInData = await AuthService.signUp(state.mainUser.name, state.mainUser.email, state.mainUser.password);
-			} else {
-				userLoggedInData = await AuthService.logIn(state.mainUser.email, state.mainUser.password);
-			}
-
-			if (userLoggedInData?.success) {
-				setAuthUser(userLoggedInData.user);
-				return true;
+				if (userLoggedInData?.success) {
+					setAuthUser(userLoggedInData.user);
+					return true;
+				}
 			}
 		} catch (error) {
 			console.error("Authentication error:", error);
@@ -111,8 +115,7 @@ const FormGroupCreation: React.FC = () => {
 				}
 
 				// create users to get _id for each
-				const users = [state.mainUser, ...state.users];
-				const userCreationPromises = users.map(async (user: User) => {
+				const userCreationPromises = state.users.map(async (user: User) => {
 					if (!user._id) {
 						const resCreateUser = await fetch(`${import.meta.env.VITE_APP_API_URL}/user`, {
 							method: 'POST',
@@ -129,7 +132,6 @@ const FormGroupCreation: React.FC = () => {
 						if (resCreateUserJSON.success) {
 							return resCreateUserJSON.data;
 						}
-
 						throw new Error('User creation error');
 					}
 
@@ -138,27 +140,27 @@ const FormGroupCreation: React.FC = () => {
 
 				const usersIds: { _id: string }[] = await Promise.all(userCreationPromises);
 				// we have to assign _id for each user using the data we got from the server
-				const usersData: User[] = [state.mainUser, ...state.users].map((user: User, index: number) => {
+				const usersData: User[] = state.users.map((user: User, index: number) => {
 					const usersId = usersIds[index];
 					return { ...user, _id: usersId._id };
 				});
 
-				if (usersIds.length !== users.length) {
+				if (usersIds.length !== state.users.length) {
 					addToast({ message: 'Une erreur est survenue lors de la création des utilisateurs', type: 'error' });
 					throw new Error('User creation error');
 				}
 
-				// update user object in state with main user id
+				// update mainUserId in state with main user data
 				dispatchState({
-					type: AuthActions.UPDATE_MAIN_USER, payload: {
-						user: usersData[0]
+					type: AuthActions.UPDATE_USER_ID, payload: {
+						user: usersData[0]._id
 					}
 				});
-				// update users object in state with users ids
+				// update users object in state with users data
 				dispatchState({
 					type: FormGroupCreationActions.UPDATE_USERS, payload: {
 						// remove main user from users list
-						users: usersData.slice(1)
+						users: usersData
 					}
 				});
 
@@ -188,6 +190,7 @@ const FormGroupCreation: React.FC = () => {
 					addToast({ message: createGroupData.message, type: 'error' });
 				}
 			} catch (err) {
+				addToast({ message: 'Erreur lors de la création du groupe', type: 'error' });
 				console.error('Group creation error:', err);
 			};
 		} else {
@@ -196,7 +199,7 @@ const FormGroupCreation: React.FC = () => {
 	}
 
 	return (
-		<>
+		<React.Fragment>
 			<Title title={"Générateur de Secret Santa"} subtitle={"Faites rapidement un tirage au sort par email ou WhatsApp."} />
 			<Card className="bg-frosty">
 				<FormGroupCreationContext.Provider value={{ state, dispatchState }}>
@@ -235,7 +238,7 @@ const FormGroupCreation: React.FC = () => {
 									</div>
 								}
 								{/* go next btn */}
-								<button disabled={currentStepValidityErrors.length > 0} className="w-5/6 btn btn-primary mb-2 flex-1">
+								<button aria-label={steps[state.stepIdx] < steps.length ? 'Continuer' : 'Créer le groupe'} disabled={currentStepValidityErrors.length > 0} className="w-5/6 btn btn-primary mb-2 flex-1">
 									{steps[state.stepIdx] < steps.length ? 'Continuer' : 'Créer le groupe'}
 								</button>
 							</div>
@@ -246,7 +249,7 @@ const FormGroupCreation: React.FC = () => {
 					</form>
 				</FormGroupCreationContext.Provider>
 			</Card>
-		</>
+		</React.Fragment>
 	);
 }
 

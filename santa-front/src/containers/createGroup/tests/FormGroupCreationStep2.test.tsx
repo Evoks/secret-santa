@@ -1,60 +1,76 @@
+/**
+ * @vitest-environment jsdom
+ */
 import { render, fireEvent, screen } from '@testing-library/react';
-import FormGroupCreationStep2 from '../FormGroupCreationStep2'; // Adjust the import according to your file structure
-import FormActionTypes from '../../../types/FormGroupEditionActions.enum';
+import FormGroupCreationStep2 from '../FormGroupCreationStep2';
+import { FormGroupCreationContext } from '../FormGroupCreation.context';
+import { useReducer } from 'react';
+import { formGroupCreationReducer, initialState as defaultState } from '../FormGroupCreation.state';
+import { describe, expect, it, vi, beforeEach } from 'vitest';
 
 describe('FormGroupCreationStep2', () => {
-	const mockDispatchState = jest.fn();
-	const mockSetCurrentStepValidityErrors = jest.fn();
+	const mockSetCurrentStepValidityErrors = vi.fn();
 
 	beforeEach(() => {
-		jest.resetAllMocks();
+		vi.resetAllMocks();
 	});
 
-	const initialState = {
-		mainUser: { name: 'Main User', excludedUsers: [] },
-		users: [],
+	const TestContextWrapper = ({ children, initialState }: any) => {
+		const [state, dispatchState] = useReducer(formGroupCreationReducer, initialState);
+
+		return (
+			<FormGroupCreationContext.Provider value={{ state, dispatchState }}>
+				{children}
+			</FormGroupCreationContext.Provider>
+		);
 	};
 
 	it('renders the initial main user input', () => {
+
+		const stateWithSomeData = {
+			...defaultState,
+			users: [{ name: 'John', excludedUsers: [] }]
+		};
+
 		render(
-			<FormGroupCreationStep2
-				state={initialState}
-				dispatchState={mockDispatchState}
-				setCurrentStepValidityErrors={mockSetCurrentStepValidityErrors}
-			/>
+			<TestContextWrapper initialState={stateWithSomeData}>
+				<FormGroupCreationStep2
+					setCurrentStepValidityErrors={mockSetCurrentStepValidityErrors}
+				/>
+			</TestContextWrapper>
 		);
 
-		expect(screen.getByDisplayValue('Main User')).toBeInTheDocument();
+		expect(screen.getByDisplayValue('John')).toBeInTheDocument();
 	});
 
 	it('adds a new user when add user button is clicked', () => {
 		render(
-			<FormGroupCreationStep2
-				state={initialState}
-				dispatchState={mockDispatchState}
-				setCurrentStepValidityErrors={mockSetCurrentStepValidityErrors}
-			/>
+			<TestContextWrapper initialState={defaultState} >
+				<FormGroupCreationStep2
+					setCurrentStepValidityErrors={mockSetCurrentStepValidityErrors}
+				/>
+			</TestContextWrapper>
 		);
 
 		fireEvent.click(screen.getByText('Ajouter un participant'));
-		expect(mockDispatchState).toHaveBeenCalledWith({
-			type: FormActionTypes.ADD_USER,
-			payload: { name: '', excludedUsers: [] },
-		});
+		expect(screen.getByTestId('user-1')).toBeInTheDocument();
 	});
 
 	it('sets validity error correctly when there is only one user', () => {
 		const stateWithInvalidData = {
-			...initialState,
-			users: [{ name: 'John', excludedUsers: [] }] // Insufficient and invalid users
+			...defaultState,
+			users: [
+				{ name: 'John', excludedUsers: [] },
+				{ name: 'Jane', excludedUsers: [] },
+			] // Insufficient and invalid users
 		};
 
 		render(
-			<FormGroupCreationStep2
-				state={stateWithInvalidData}
-				dispatchState={mockDispatchState}
-				setCurrentStepValidityErrors={mockSetCurrentStepValidityErrors}
-			/>
+			<TestContextWrapper initialState={stateWithInvalidData}>
+				<FormGroupCreationStep2
+					setCurrentStepValidityErrors={mockSetCurrentStepValidityErrors}
+				/>
+			</TestContextWrapper>
 		);
 
 		expect(mockSetCurrentStepValidityErrors).toHaveBeenCalledWith([
@@ -64,21 +80,22 @@ describe('FormGroupCreationStep2', () => {
 
 	it('sets validity error correctly when there is odd number of users', () => {
 		const stateWithInvalidData = {
-			...initialState,
+			...defaultState,
 			users: [
 				{ name: 'John', excludedUsers: [] },
 				{ name: 'Jane', excludedUsers: [] },
+				{ name: 'Tata', excludedUsers: [] },
+				{ name: 'Tutu', excludedUsers: [] },
 				{ name: 'Toto', excludedUsers: [] },
-				{ name: 'Doe', excludedUsers: [] },
 			]
 		};
 
 		render(
-			<FormGroupCreationStep2
-				state={stateWithInvalidData}
-				dispatchState={mockDispatchState}
-				setCurrentStepValidityErrors={mockSetCurrentStepValidityErrors}
-			/>
+			<TestContextWrapper initialState={stateWithInvalidData}>
+				<FormGroupCreationStep2
+					setCurrentStepValidityErrors={mockSetCurrentStepValidityErrors}
+				/>
+			</TestContextWrapper>
 		);
 
 		expect(mockSetCurrentStepValidityErrors).toHaveBeenCalledWith([
@@ -88,22 +105,21 @@ describe('FormGroupCreationStep2', () => {
 
 	it('sets validity error correctly when there are errors with user names', () => {
 		const stateWithInvalidData = {
-			...initialState,
+			...defaultState,
 			users: [
 				{ name: 'Test', excludedUsers: [] },
 				{ name: 'Test', excludedUsers: [] },
-				{ name: '', excludedUsers: [] },
 				{ name: '', excludedUsers: [] },
 				{ name: '', excludedUsers: [] },
 			]
 		};
 
 		render(
-			<FormGroupCreationStep2
-				state={stateWithInvalidData}
-				dispatchState={mockDispatchState}
-				setCurrentStepValidityErrors={mockSetCurrentStepValidityErrors}
-			/>
+			<TestContextWrapper initialState={stateWithInvalidData}>
+				<FormGroupCreationStep2
+					setCurrentStepValidityErrors={mockSetCurrentStepValidityErrors}
+				/>
+			</TestContextWrapper>
 		);
 
 		expect(mockSetCurrentStepValidityErrors).toHaveBeenCalledWith([

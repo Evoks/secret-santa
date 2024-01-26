@@ -5,9 +5,10 @@ import { TextInput } from "flowbite-react";
 interface InputGroupUserExclusionProps {
 	user: any;
 	setSelectedUser: any;
+	index: number;
 }
 
-const InputGroupUserExclusion: React.FC<InputGroupUserExclusionProps> = ({ user, setSelectedUser }) => {
+const InputGroupUserExclusion: React.FC<InputGroupUserExclusionProps> = ({ user, setSelectedUser, index }) => {
 	const openExclusionModalHandler = () => {
 		setSelectedUser(user);
 	};
@@ -20,7 +21,7 @@ const InputGroupUserExclusion: React.FC<InputGroupUserExclusionProps> = ({ user,
 				</label>
 			</div>
 			<div className="relative">
-				<TextInput onClick={() => { openExclusionModalHandler() }} readOnly={true} placeholder="Choisissez des exclusions..." className="w-full !cursor-pointer" value={user.excludedUsers.join(', ')} />
+				<TextInput data-testid={`exclusion-user-input-${index}`} onClick={() => { openExclusionModalHandler() }} readOnly={true} placeholder="Choisissez des exclusions..." className="w-full !cursor-pointer" value={user.excludedUsers.join(', ')} />
 				<div className="absolute right-[10px] top-[14px] text-xs cursor-pointer hover:opacity-70 transition-all">
 					<FontAwesomeIcon icon={faChevronRight} />
 				</div>

@@ -1,67 +1,12 @@
 import './App.css';
-import { RouterProvider, createBrowserRouter } from 'react-router-dom';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { Body, ErrorPage } from './components/structure';
+import { Body } from './components/structure';
+import { QueryClientProvider } from '@tanstack/react-query';
+import router, { queryClient } from './routes-obj';
 // pages
-import { Error, Layout, HomePage, GroupManager, UserGroups, GroupFinder, LoginPage, Logout } from './routes';
-// loaders
-import { loader as groupLoader } from './routes/GroupManagerPage';
-import { loader as userGroupsLoader } from './routes/UserGroupsPage';
-import { loader as groupFinderLoader } from './routes/GroupFinderPage';
 import AuthContextWrapper from './contexts/AuthContext';
 import ToastContextWrapper from './contexts/ToastContext';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
-
-const queryClient = new QueryClient({
-	defaultOptions: {
-		queries: {
-			staleTime:	1000 * 60 * 5, // 5 minutes
-		}
-	}
-});
-
-const router = createBrowserRouter([
-	{
-		path: '/',
-		element: <Layout />,
-		errorElement: <Error />,
-		children: [
-			{
-				index: true,
-				element: <HomePage />,
-				errorElement: <ErrorPage />,
-			},
-			{
-				path: '/group',
-				element: <GroupFinder />,
-				errorElement: <ErrorPage />,
-				loader: groupFinderLoader,
-			},
-			{
-				path: '/group/:id',
-				element: <GroupManager />,
-				errorElement: <ErrorPage />,
-				loader: groupLoader(queryClient),
-			},
-			{
-				path: '/my-groups',
-				element: <UserGroups />,
-				errorElement: <ErrorPage />,
-				loader: userGroupsLoader(queryClient),
-			},
-			{
-				path: '/login',
-				element: <LoginPage />,
-				errorElement: <ErrorPage />,
-			},
-			{
-				path: '/logout',
-				element: <Logout />,
-				errorElement: <ErrorPage />,
-			},
-		],
-	}
-]);
+import { RouterProvider } from 'react-router-dom';
 
 type CombinedContextsProps = {
 	children: React.ReactNode;
@@ -75,7 +20,11 @@ const CombinedContexts: React.FC<CombinedContextsProps> = ({ children }) => (
 	</AuthContextWrapper>
 );
 
-const App: React.FC = () => {
+type AppPropsType = {
+	children: React.ReactNode;
+}
+
+const App: React.FC<AppPropsType> = ({ children }: AppPropsType) => {
 	return (
 		<QueryClientProvider client={queryClient}>
 			<CombinedContexts>

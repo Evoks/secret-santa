@@ -6,46 +6,15 @@ import { ToastContext } from "../../contexts/ToastContext";
 import User from "../../types/User";
 import SignUpForm from "../../components/SignupForm";
 import LoginForm from "../../components/LoginForm";
-import AuthActions from "../../types/AuthActions.enum";
 import AuthService from "../../services/auth.service";
+import { formGroupCreationReducer, initialState } from "./GroupFinder.state";
+import React from "react";
 
 const groupIdRegex = /^[a-f0-9]{24}$/;
-
-type FormGroupFinderState = {
-	groupName: string;
-	dueDate: Date;
-	user: User,
-	users: User[];
-	stepIdx: number;
-	createAccount: boolean;
-}
-
-const initialState: FormGroupFinderState = {
-	groupName: 'Test',
-	dueDate: new Date(),
-	user: { _id: null, name: '', password: '', email: '', excludedUsers: [] },
-	users: [
-		{ _id: null, name: 'Jean', excludedUsers: [] },
-		{ _id: null, name: 'Marcel', excludedUsers: [] },
-		{ _id: null, name: 'Antoinio', excludedUsers: [] }
-	],
-	stepIdx: 0,
-	createAccount: false,
-};
-
-function formGroupCreationReducer(state: FormGroupFinderState, action: { type: string, payload: any }) {
-	switch (action.type) {
-		case AuthActions.UPDATE_MAIN_USER:
-			return { ...state, user: { ...state.user, ...action.payload } };
-		default:
-			return state;
-	}
-}
 
 type GroupFinderProps = {
 	data: { groupId: string };
 }
-
 
 const GroupFinder: React.FC<GroupFinderProps> = ({ data }: GroupFinderProps) => {
 	const navigate = useNavigate();
@@ -58,7 +27,7 @@ const GroupFinder: React.FC<GroupFinderProps> = ({ data }: GroupFinderProps) => 
 	const [groupUsers, setGroupUsers] = useState<User[]>([]);
 	const [selectedUser, setSelectedUser] = useState<User | null>(null);
 	const [authFormType, setAuthFormType] = useState<'login' | 'signup' | null>(null);
-	const [authState, dispatchAuthState] = useReducer(formGroupCreationReducer, initialState);
+	const [state, dispatchState] = useReducer(formGroupCreationReducer, initialState);
 
 	useEffect(() => {
 		if (authUser) {
@@ -66,16 +35,20 @@ const GroupFinder: React.FC<GroupFinderProps> = ({ data }: GroupFinderProps) => 
 		}
 	}, [authUser]);
 
-
 	const checkGroupValidity = async (groupId: string) => {
-		const response = await fetch(`${import.meta.env.VITE_APP_API_URL}/group/check/${groupId}`);
-		if (!response.ok) {
+		try {
+			const response = await fetch(`${import.meta.env.VITE_APP_API_URL}/group/check/${groupId}`);
+			if (!response.ok) {
+				addToast({ message: 'Le groupe n\'existe pas', type: 'error' });
+				return;
+			}
+			const data = await response.json();
+			setGroupExists(data.success);
+			setGroupUsers(data.users);
+		} catch (e) {
+			addToast({ message: 'Une erreur s\'est produite !', type: 'error' });
 			console.error('Group not found');
-			return;
 		}
-		const data = await response.json();
-		setGroupExists(data.success);
-		setGroupUsers(data.users);
 	};
 
 	const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -95,11 +68,12 @@ const GroupFinder: React.FC<GroupFinderProps> = ({ data }: GroupFinderProps) => 
 		const userId = e.target.value;
 		const user = groupUsers.find((user: User) => user._id === userId);
 		if (user) {
+			state.mainUserId = user?._id;
+			state.users[0] = { ...state.users[0], ...user };
 			setSelectedUser(user);
 		} else {
 			setSelectedUser(null);
 		}
-		authState.user = { ...authState.user, ...user };
 		if (user?.registered) {
 			setAuthFormType('login');
 		} else if (!authUser) {
@@ -112,16 +86,18 @@ const GroupFinder: React.FC<GroupFinderProps> = ({ data }: GroupFinderProps) => 
 	async function handleAuthentication() {
 		try {
 			let userLoggedInData;
+			const mainUser = state.users[0];
+			if (mainUser && mainUser.email && mainUser.password) {
+				if (authFormType === 'signup') {
+					userLoggedInData = await AuthService.signUp(mainUser.name, mainUser.email, mainUser.password, mainUser._id);
+				} else if (authFormType === 'login') {
+					userLoggedInData = await AuthService.logIn(mainUser.email, mainUser.password);
+				}
 
-			if (authFormType === 'signup') {
-				userLoggedInData = await AuthService.signUp(authState.user.name, authState.user.email, authState.user.password, authState.user._id);
-			} else if (authFormType === 'login') {
-				userLoggedInData = await AuthService.logIn(authState.user.email, authState.user.password);
-			}
-
-			if (userLoggedInData?.success) {
-				setAuthUser(userLoggedInData.user);
-				return true;
+				if (userLoggedInData?.success) {
+					setAuthUser(userLoggedInData.user);
+					return true;
+				}
 			}
 		} catch (error) {
 			console.error("Authentication error:", error);
@@ -173,7 +149,7 @@ const GroupFinder: React.FC<GroupFinderProps> = ({ data }: GroupFinderProps) => 
 					</div>
 				</div>
 				{groupExists &&
-					<>
+					<React.Fragment>
 						<div className="mb-2 block">
 							<Label htmlFor="groupUsers" value="Quel membre du groupe êtes-vous ?" />
 						</div>
@@ -184,25 +160,25 @@ const GroupFinder: React.FC<GroupFinderProps> = ({ data }: GroupFinderProps) => 
 							))}
 						</Select>
 						{authFormType === 'signup' &&
-							<>
+							<React.Fragment>
 								<div className="mb-2 block text-center w-full font-bold text-dark">
 									Inscription
 								</div>
-								<SignUpForm dispInputName={false} includeForm={false} state={authState} dispatchState={dispatchAuthState} includeTitle={false} displayButton={false} />
-							</>
+								<SignUpForm dispInputName={false} includeForm={false} state={state} dispatchState={dispatchState} includeTitle={false} displayButton={false} />
+							</React.Fragment>
 						}
 						{authFormType === 'login' &&
-							<>
+							<React.Fragment>
 								<div className="mb-2 block text-center w-full font-bold">
 									Connexion au compte
 								</div>
-								<LoginForm includeForm={false} state={authState} dispatchState={dispatchAuthState} includeTitle={false} displayButton={false} />
-							</>
+								<LoginForm includeForm={false} state={state} dispatchState={dispatchState} includeTitle={false} displayButton={false} />
+							</React.Fragment>
 						}
-					</>
+					</React.Fragment>
 				}
 				<div className="w-full lg:w-1/2 mx-auto">
-					<Button type="submit" className="btn-primary mx-auto btn" disabled={!isIdValid || !selectedUser || !groupExists}>Accéder au groupe</Button>
+					<Button aria-label="Accéder au groupe" type="submit" className="btn-primary mx-auto btn" disabled={!isIdValid || !selectedUser || !groupExists}>Accéder au groupe</Button>
 				</div>
 			</form>
 		</Card>

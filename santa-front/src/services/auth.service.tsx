@@ -1,3 +1,5 @@
+import { storage } from "../utils/storage";
+
 type LoginResponse = {
 	access_token?: string;
 	user?: any;
@@ -7,57 +9,69 @@ type LoginResponse = {
 
 const AuthService = {
 	authCheck: async () => {
-		const access_token = localStorage.getItem('access_token');
+		const access_token = storage.getItem('access_token');
 		if (!access_token)
 			return false;
 		const urlQueryData = { access_token };
 		const urlQuery = new URLSearchParams(urlQueryData).toString();
-		const response = await fetch(`${import.meta.env.VITE_APP_API_URL}/auth/check?${urlQuery}`, {
-			headers: {
-				'Content-Type': 'application/json'
-			},
-		});
-		const data = await response.json();
-		if (!data.success) {
-			localStorage.removeItem('access_token');
-			localStorage.removeItem('user');
+		try {
+			const response = await fetch(`${import.meta.env.VITE_APP_API_URL}/auth/check?${urlQuery}`, {
+				headers: {
+					'Content-Type': 'application/json'
+				},
+			});
+			const data = await response.json();
+			if (!data.success) {
+				storage.removeItem('access_token');
+				storage.removeItem('user');
+			}
+			return data.success;
+		} catch (e) {
+			return false;
 		}
-		return data.success;
 	},
 
 	logIn: async (email: string, password: string): Promise<LoginResponse> => {
-		const response = await fetch(`${import.meta.env.VITE_APP_API_URL}/auth/login`, {
-			method: 'POST',
-			headers: {
-				'Content-Type': 'application/json'
-			},
-			body: JSON.stringify({ email, password })
-		});
-		const userData: LoginResponse = await response.json();
-		if (userData.access_token) {
-			localStorage.setItem('access_token', userData.access_token);
-			localStorage.setItem('user', JSON.stringify(userData.user));
+		try {
+			const response = await fetch(`${import.meta.env.VITE_APP_API_URL}/auth/login`, {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json'
+				},
+				body: JSON.stringify({ email, password })
+			});
+			const userData: LoginResponse = await response.json();
+			if (userData.access_token) {
+				storage.setItem('access_token', userData.access_token);
+				storage.setItem('user', JSON.stringify(userData.user));
+			}
+			return userData;
+		} catch (e) {
+			return { success: false, message: 'Une erreur est survenue' };
 		}
-		return userData;
 	},
 
 	signUp: async (name: string, email: string, password: string, userId: string | null = null) => {
-		const response = await fetch(`${import.meta.env.VITE_APP_API_URL}/user`, {
-			method: 'POST',
-			headers: {
-				'Content-Type': 'application/json'
-			},
-			body: JSON.stringify({ name, email, password, userId })
-		});
-		const createdUserData = await response.json();
-		if (createdUserData.success) {
-			return await AuthService.logIn(email, password);
+		try {
+			const response = await fetch(`${import.meta.env.VITE_APP_API_URL}/user`, {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json'
+				},
+				body: JSON.stringify({ name, email, password, userId })
+			});
+			const createdUserData = await response.json();
+			if (createdUserData.success) {
+				return await AuthService.logIn(email, password);
+			}
+			return createdUserData;
+		} catch (e) {
+			return { success: false, message: 'Une erreur est survenue' };
 		}
-		return createdUserData;
 	},
 
 	logOut: () => {
-		localStorage.removeItem('access_token');
+		storage.removeItem('access_token');
 	}
 };
 

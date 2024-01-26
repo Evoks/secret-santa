@@ -9,12 +9,17 @@ type InputPasswordProps = {
 	value: any,
 	setValue: any,
 	property: string,
+	validationFn?: any,
 }
 
-const InputPassword = ({ value, setValue, property }: InputPasswordProps) => {
+const InputPassword = ({ value, setValue, property, validationFn = null }: InputPasswordProps) => {
 	const [isPasswordVisible, setIsPasswordVisible] = useState<boolean>(false);
 	const [inputType, setInputType] = useState<string>('password');
 
+	if (!validationFn) {
+		validationFn = (value: string) => passwordRegex.test(value);
+	}
+	
 	useEffect(() => {
 		setInputType(isPasswordVisible ? 'text' : 'password');
 	}, [isPasswordVisible]);
@@ -25,7 +30,7 @@ const InputPassword = ({ value, setValue, property }: InputPasswordProps) => {
 				type={inputType}
 				placeholder="Renseignez votre mot de passe"
 				value={value}
-				color={value.length === 0 || passwordRegex.test(value.password) ? 'gray' : 'failure'}
+				color={value.length === 0 || validationFn(value) ? 'gray' : 'failure'}
 				onChange={(e) => setValue(e.target.value, property)}
 				className="mb-4"
 			/>

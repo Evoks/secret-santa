@@ -2,7 +2,7 @@
 //
 // Path: src/pages/SignUp.tsx
 
-import { useContext, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import { Button, Card, Label, TextInput } from 'flowbite-react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSpinner } from '@fortawesome/free-solid-svg-icons';
@@ -13,6 +13,10 @@ import emailRegex from '../helpers/email.regex';
 import AuthActions from '../types/AuthActions.enum';
 import Title from './Title';
 import InputPassword from './InputPassword';
+import FormGroupCreationActions from '../types/FormGroupCreationActions.enum';
+import User from '../types/User';
+import passwordRegex from '../helpers/password.regex';
+import React from 'react';
 
 type SignUpFormProps = {
 	state?: any;
@@ -20,37 +24,51 @@ type SignUpFormProps = {
 	dispatchState?: any;
 	includeTitle?: boolean;
 	includeCard?: boolean;
-	propertyUserName?: string;
 	displayButton: boolean;
 	handleSubmitCallback?: any;
 	dispInputName?: boolean;
 }
 
-const SignUpForm: React.FC<SignUpFormProps> = ({ state, dispatchState, displayButton, handleSubmitCallback, propertyUserName = 'user', dispInputName = true, includeTitle = false, includeCard = false, includeForm = true }: SignUpFormProps) => {
+const SignUpForm: React.FC<SignUpFormProps> = ({ state, dispatchState, displayButton, handleSubmitCallback, dispInputName = true, includeTitle = false, includeCard = false, includeForm = true }: SignUpFormProps) => {
 	const { setAuthUser } = useContext(AuthContext);
 	const { addToast } = useContext(ToastContext);
 
 	const [passwordCheck, setPasswordCheck] = useState<string>('');
 	const [isLoading, setIsLoading] = useState<boolean>(false);
 
+	const [mainUser, setMainUser] = useState<User>(state.users ? state.users[0] : state.user);
+
+	useEffect(() => {
+		setMainUser(state.users ? state.users[0] : state.user);
+	}, [state.users, state.user]);
+
 	const setStateValue = (value: string, property: string) => {
-		dispatchState({ type: AuthActions.UPDATE_MAIN_USER, payload: { [property]: value } });
+		// if the state is the state of the form group creation
+		if (state.users) {
+			dispatchState({ type: FormGroupCreationActions.UPDATE_USER, payload: { index: 0, [property]: value } });
+		} else if (state.user) { // if the state is the state of the login form
+			dispatchState({ type: AuthActions.UPDATE_USER_ID, payload: { [property]: value } });
+		}
 	}
 
 	const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
 		e.preventDefault();
-		if (state[propertyUserName].password !== passwordCheck) {
+		if (mainUser.password !== passwordCheck) {
 			addToast({ message: 'Les mots de passe ne correspondent pas', type: 'error' });
 			return;
 		}
 		let success = true;
 		setIsLoading(true);
 		try {
-			const userLoggedIn = await AuthService.signUp(state[propertyUserName].name, state[propertyUserName].email, state[propertyUserName].password, state[propertyUserName]._id);
-			if (!userLoggedIn) {
-				throw new Error('Une erreur est survenue lors de la création du compte');
+			if (mainUser &&
+				mainUser.email && !emailRegex.test(mainUser.email) &&
+				mainUser.password && !passwordRegex.test(mainUser.password)) {
+				const userLoggedIn = await AuthService.signUp(mainUser.name, mainUser.email, mainUser.password, mainUser._id);
+				if (!userLoggedIn) {
+					throw new Error('Une erreur est survenue lors de la création du compte');
+				}
+				setAuthUser(userLoggedIn);
 			}
-			setAuthUser(userLoggedIn);
 		} catch (e: any) {
 			addToast({ message: e?.message || 'Une erreur est survenue lors de la création du compte', type: 'error' });
 			success = false;
@@ -60,20 +78,20 @@ const SignUpForm: React.FC<SignUpFormProps> = ({ state, dispatchState, displayBu
 	}
 
 	const formInputs = (
-		<>
+		<React.Fragment>
 			{dispInputName &&
-				<>
+				<React.Fragment>
 					<div className="mb-2 block">
 						<Label htmlFor="name" value="Nom" />
 					</div>
 					<TextInput
 						type="name"
 						placeholder="Renseignez votre nom"
-						value={state[propertyUserName].name}
-						onChange={(e) => dispatchState({ type: AuthActions.UPDATE_MAIN_USER, payload: { name: e.target.value } })}
+						value={mainUser.name}
+						onChange={(e) => setStateValue(e.target.value, 'email')}
 						className="mb-2"
 					/>
-				</>
+				</React.Fragment>
 			}
 			<div className="mb-2 block">
 				<Label htmlFor="email" value="Adresse email" />
@@ -81,25 +99,32 @@ const SignUpForm: React.FC<SignUpFormProps> = ({ state, dispatchState, displayBu
 			<TextInput
 				type="email"
 				placeholder="Renseignez votre adresse mail"
-				value={state[propertyUserName].email}
-				color={state[propertyUserName].email.length === 0 || emailRegex.test(state[propertyUserName].email) ? 'gray' : 'failure'}
-				onChange={(e) => dispatchState({ type: AuthActions.UPDATE_MAIN_USER, payload: { email: e.target.value } })}
+				value={mainUser.email}
+				color={mainUser.email?.length === 0 || emailRegex.test(mainUser.email || '') ? 'gray' : 'failure'}
+				onChange={(e) => setStateValue(e.target.value, 'email')}
 				className="mb-2"
 			/>
 			<div className="mb-2 block">
 				<Label htmlFor="password" value="Mot de passe" />
 			</div>
-			<InputPassword value={state[propertyUserName].password} setValue={setStateValue} property={propertyUserName} />
+			<InputPassword value={mainUser.password} setValue={setStateValue} property={'password'} />
 			<div className="mb-2 text-xs text-gray-400">
 				Le mot de passe doit contenir au moins 8 caractères, dont une majuscule, une minuscule et un chiffre.
 			</div>
 			<div className="mb-2 block">
 				<Label htmlFor="passwordCheck" value="Verification du mot de passe" />
 			</div>
-			<InputPassword value={passwordCheck} setValue={(value: string) => {setPasswordCheck(value)}} property={'passwordCheck'} />
+			<InputPassword
+				value={passwordCheck}
+				setValue={(value: string) => { setPasswordCheck(value) }}
+				property={'passwordCheck'}
+				validationFn={(value: string) => {
+					return passwordRegex.test(value) && value === mainUser.password;
+				}}
+			/>
 			{displayButton &&
 				<div className="w-full flex flex-row justify-center">
-					<Button type="submit" disabled={isLoading} className="btn-primary mb-4">
+					<Button aria-label="Créer un compte" type="submit" disabled={isLoading} className="btn-primary mb-4">
 						{isLoading ? (
 							<FontAwesomeIcon icon={faSpinner} spin />
 						) : (
@@ -108,11 +133,11 @@ const SignUpForm: React.FC<SignUpFormProps> = ({ state, dispatchState, displayBu
 					</Button>
 				</div>
 			}
-		</>
+		</React.Fragment>
 	);
 
 	const content = (
-		<>
+		<React.Fragment>
 			{!includeForm &&
 				<div className="w-full">
 					{formInputs}
@@ -123,7 +148,7 @@ const SignUpForm: React.FC<SignUpFormProps> = ({ state, dispatchState, displayBu
 					{formInputs}
 				</form>
 			}
-		</>
+		</React.Fragment>
 	);
 
 	return (
@@ -137,9 +162,9 @@ const SignUpForm: React.FC<SignUpFormProps> = ({ state, dispatchState, displayBu
 				</Card>
 			}
 			{!includeCard &&
-				<>
+				<React.Fragment>
 					{content}
-				</>
+				</React.Fragment>
 			}
 		</div>
 	);

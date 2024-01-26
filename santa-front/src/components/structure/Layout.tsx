@@ -1,12 +1,13 @@
 import { Outlet, useNavigation } from 'react-router-dom';
 import { Header, Footer, Loading } from '.';
+import React from 'react';
 
 const HomeLayout: React.FC = () => {
 	const navigation = useNavigation();
 	const isPageLoading = navigation.state === 'loading';
 	
 	return (
-		<>
+		<React.Fragment>
 			<Header />
 			{isPageLoading ? (
 				<Loading />
@@ -16,7 +17,7 @@ const HomeLayout: React.FC = () => {
 				</section>
 			)}
 			<Footer />
-		</>
+		</React.Fragment>
 	);
 };
 export default HomeLayout;

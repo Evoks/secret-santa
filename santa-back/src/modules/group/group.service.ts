@@ -105,13 +105,6 @@ export class GroupService {
 
 	// find all groups from a user
 	async findAllGroupsFromUser(userId: string, skip: number = 0, limit: number = 10) {
-		const groups = await Group.find({
-			$or: [
-				{ mainUser: new mongoose.Types.ObjectId(userId) },
-				{ 'users._id': new mongoose.Types.ObjectId(userId) },
-			],
-		});
-		console.log({ groups }, new mongoose.Types.ObjectId(userId));
 		return await Group.find({
 			$or: [{ mainUser: userId }, { 'users._id': userId }],
 		})
@@ -181,8 +174,6 @@ export class GroupService {
 				name: u.name,
 			};
 		});
-
-		console.log({ updateGroupData, groupData });
 
 		// Save the updated group
 		await groupData.save();

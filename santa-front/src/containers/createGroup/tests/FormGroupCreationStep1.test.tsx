@@ -1,29 +1,40 @@
+/**
+ * @vitest-environment jsdom
+ */
 import { render, fireEvent, screen } from '@testing-library/react';
-import FormGroupCreationStep1 from '../FormGroupCreationStep1'; // Adjust the import according to your file structure
+import FormGroupCreationStep1 from '../FormGroupCreationStep1';
 import FormActionTypes from '../../../types/FormGroupEditionActions.enum';
-import AuthActions from '../../../types/AuthActions.enum';
+import { formGroupCreationReducer, initialState as defaultState } from '../FormGroupCreation.state';
+import { useReducer } from 'react';
+import { FormGroupCreationContext } from '../FormGroupCreation.context';
+import FormGroupCreationActions from '../../../types/FormGroupCreationActions.enum';
+import { describe, expect, it, vi, beforeEach } from 'vitest';
 
 describe('FormGroupCreationStep1', () => {
-	const mockDispatchState = jest.fn();
-	const mockSetCurrentStepValidityErrors = jest.fn();
+	const mockDispatchState = vi.fn();
+	const mockSetCurrentStepValidityErrors = vi.fn();
 
 	beforeEach(() => {
-		jest.resetAllMocks();
+		vi.resetAllMocks();
 	});
 
-	const initialState = {
-		groupName: '',
-		mainUser: { name: '' },
-		dueDate: new Date(),
+	const TestContextWrapper = ({ children, initialState, mockDispatchState = null }: any) => {
+		const [state, dispatchState] = useReducer(formGroupCreationReducer, initialState);
+
+		return (
+			<FormGroupCreationContext.Provider value={{ state, dispatchState: mockDispatchState ? mockDispatchState : dispatchState }}>
+				{children}
+			</FormGroupCreationContext.Provider>
+		);
 	};
 
 	it('renders inputs correctly', async () => {
 		render(
-			<FormGroupCreationStep1
-				state={initialState}
-				dispatchState={mockDispatchState}
-				setCurrentStepValidityErrors={mockSetCurrentStepValidityErrors}
-			/>
+			<TestContextWrapper initialState={defaultState}>
+				<FormGroupCreationStep1
+					setCurrentStepValidityErrors={mockSetCurrentStepValidityErrors}
+				/>
+			</TestContextWrapper>
 		);
 
 		expect(screen.getByPlaceholderText('Nom du groupe')).toBeInTheDocument();
@@ -34,11 +45,11 @@ describe('FormGroupCreationStep1', () => {
 
 	it('calls dispatch with the correct action on group name input change', () => {
 		render(
-			<FormGroupCreationStep1
-				state={initialState}
-				dispatchState={mockDispatchState}
-				setCurrentStepValidityErrors={mockSetCurrentStepValidityErrors}
-			/>
+			<TestContextWrapper initialState={defaultState} mockDispatchState={mockDispatchState}>
+				<FormGroupCreationStep1
+					setCurrentStepValidityErrors={mockSetCurrentStepValidityErrors}
+				/>
+			</TestContextWrapper>
 		);
 
 		const groupNameInput = screen.getByPlaceholderText('Nom du groupe');
@@ -52,45 +63,36 @@ describe('FormGroupCreationStep1', () => {
 
 	it('calls dispatch with the correct action on main user name input change', () => {
 		render(
-			<FormGroupCreationStep1
-				state={initialState}
-				dispatchState={mockDispatchState}
-				setCurrentStepValidityErrors={mockSetCurrentStepValidityErrors}
-			/>
+			<TestContextWrapper initialState={defaultState} mockDispatchState={mockDispatchState}>
+				<FormGroupCreationStep1
+					setCurrentStepValidityErrors={mockSetCurrentStepValidityErrors}
+				/>
+			</TestContextWrapper>
 		);
 
 		const mainUserNameInput = screen.getByPlaceholderText('Quel est votre nom ?');
 		fireEvent.change(mainUserNameInput, { target: { value: 'John Doe' } });
 
 		expect(mockDispatchState).toHaveBeenCalledWith({
-			type: AuthActions.UPDATE_MAIN_USER,
-			payload: { name: 'John Doe' },
+			type: FormGroupCreationActions.UPDATE_USER,
+			payload: { name: 'John Doe', index: 0 },
 		});
 	});
 
 	it('sets validity errors correctly when conditions are not met', () => {
 		const stateWithInvalidData = {
-			...initialState,
+			...defaultState,
 			groupName: 'A', // less than 3 characters
 			mainUser: { name: 'JD' }, // less than 3 characters
 			dueDate: new Date(new Date().setDate(new Date().getDate() - 1)), // past date
 		};
-
-		const { rerender } = render(
-			<FormGroupCreationStep1
-				state={initialState}
-				dispatchState={mockDispatchState}
-				setCurrentStepValidityErrors={mockSetCurrentStepValidityErrors}
-			/>
-		);
-
 		// Rerender with invalid data to trigger useEffect
-		rerender(
-			<FormGroupCreationStep1
-				state={stateWithInvalidData}
-				dispatchState={mockDispatchState}
-				setCurrentStepValidityErrors={mockSetCurrentStepValidityErrors}
-			/>
+		render(
+			<TestContextWrapper initialState={stateWithInvalidData}>
+				<FormGroupCreationStep1
+					setCurrentStepValidityErrors={mockSetCurrentStepValidityErrors}
+				/>
+			</TestContextWrapper>
 		);
 
 		expect(mockSetCurrentStepValidityErrors).toHaveBeenCalledWith([

@@ -46,15 +46,11 @@ export class UsersService {
 			let userDB: IUser & mongoose.Document = null;
 			// Check if the user already exists with email
 			userDB = await User.findOne({ email: userData.email });
-			console.log(1);
 			if (!userDB) {
-				console.log(2);
 				// Check if the user already exists with userId
 				if (userData.userId) {
-					console.log(3);
 					userDB = await User.findOne({ _id: new mongoose.Types.ObjectId(userData.userId) });
 					if (userDB) {
-						console.log(4);
 						userDB.email = userData.email;
 						userDB.registered = true;
 						userDB.pwdHash = await hashString(userData.password);
@@ -63,10 +59,8 @@ export class UsersService {
 						return userDB;
 					}
 				}
-				console.log(5);
 				return await this._createRegisteredUser(userData);
 			} else if (userData.password) {
-				console.log(6);
 				// we check the credentials
 				const userChecked = await authService.checkCredentials(userData.email, userData.password);
 				if (!userChecked) {

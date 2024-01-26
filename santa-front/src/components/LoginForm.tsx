@@ -1,4 +1,4 @@
-import { useContext, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import { Button, Card, Label, TextInput } from 'flowbite-react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSpinner } from '@fortawesome/free-solid-svg-icons';
@@ -9,6 +9,9 @@ import AuthActions from '../types/AuthActions.enum';
 import { ToastContext } from '../contexts/ToastContext';
 import Title from './Title';
 import InputPassword from './InputPassword';
+import FormGroupCreationActions from '../types/FormGroupCreationActions.enum';
+import User from '../types/User';
+import React from 'react';
 
 type LoginFormProps = {
 	state?: any;
@@ -17,18 +20,28 @@ type LoginFormProps = {
 	includeTitle?: boolean,
 	dispatchState?: any;
 	displayButton: boolean;
-	propertyUserName?: string;
 	handleSubmitCallback?: any;
 }
 
-const LoginForm: React.FC<LoginFormProps> = ({ state, dispatchState, displayButton, handleSubmitCallback, propertyUserName = 'user', includeTitle = false, includeCard = false, includeForm = true }: any) => {
+const LoginForm: React.FC<LoginFormProps> = ({ state, dispatchState, displayButton, handleSubmitCallback, includeTitle = false, includeCard = false, includeForm = true }: any) => {
 	const { setAuthUser } = useContext(AuthContext);
 	const { addToast } = useContext(ToastContext);
+
+	const [ mainUser, setMainUser ] = useState<User>(state.users ? state.users[0] : state.user);
+
+	useEffect(() => {
+		setMainUser(state.users ? state.users[0] : state.user);
+	}, [state.users, state.user]);
 
 	const [isLoading, setIsLoading] = useState<boolean>(false);
 
 	const setStateValue = (value: string, property: string) => {
-		dispatchState({ type: AuthActions.UPDATE_MAIN_USER, payload: { [property]: value } });
+		// if the state is the state of the form group creation
+		if (state.users) {
+			dispatchState({ type: FormGroupCreationActions.UPDATE_USER, payload: { index: 0, [property]: value } });
+		} else if (state.user) { // if the state is the state of the login form
+			dispatchState({ type: AuthActions.UPDATE_USER_ID, payload: { [property]: value } });
+		}
 	}
 
 	const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -37,7 +50,8 @@ const LoginForm: React.FC<LoginFormProps> = ({ state, dispatchState, displayButt
 			let success = true;
 			setIsLoading(true);
 			try {
-				const userLoggedInData = await AuthService.logIn(state[propertyUserName].email, state[propertyUserName].password);
+				const userData = state.users ? state.users[0] : state.user;
+				const userLoggedInData = await AuthService.logIn(userData.email, userData.password);
 				if (userLoggedInData.success === false) {
 					throw new Error('Une erreur est survenue lors de la connexion au compte');
 				}
@@ -54,26 +68,26 @@ const LoginForm: React.FC<LoginFormProps> = ({ state, dispatchState, displayButt
 	}
 
 	const formInputs = (
-		<>
+		<React.Fragment>
 			<div className="mb-2 block">
 				<Label htmlFor="email" value="Adresse email" />
 			</div>
 			<TextInput
 				type="email"
 				placeholder="Renseignez votre adresse email"
-				value={state[propertyUserName].email}
-				color={state[propertyUserName].email.length === 0 || emailRegex.test(state[propertyUserName].email) ? 'gray' : 'failure'}
-				onChange={(e) => dispatchState({ type: AuthActions.UPDATE_MAIN_USER, payload: { email: e.target.value } })}
+				value={mainUser.email}
+				color={mainUser.email?.length === 0 || emailRegex.test(mainUser.email || '') ? 'gray' : 'failure'}
+				onChange={(e) => setStateValue(e.target.value, 'email')}
 				className="mb-2"
 			/>
 			<div className="mb-2 block">
 				<Label htmlFor="password" value="Mot de passe" />
 			</div>
-			<InputPassword value={state[propertyUserName].password} setValue={setStateValue} property={propertyUserName} />
+			<InputPassword value={mainUser.password} setValue={setStateValue} property={'password'} />
 			{
 				displayButton &&
 				<div className="w-full flex flex-row justify-center">
-					<Button type="submit" disabled={isLoading} className="btn-primary mb-4">
+					<Button aria-label="Connexion" type="submit" disabled={isLoading} className="btn-primary mb-4">
 						{isLoading ? (
 							<FontAwesomeIcon icon={faSpinner} spin />
 						) : (
@@ -82,11 +96,11 @@ const LoginForm: React.FC<LoginFormProps> = ({ state, dispatchState, displayButt
 					</Button>
 				</div>
 			}
-		</>
+		</React.Fragment>
 	);
 
 	const content = (
-		<>
+		<React.Fragment>
 			{!includeForm &&
 				<div className="w-full">
 					{formInputs}
@@ -97,7 +111,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ state, dispatchState, displayButt
 					{formInputs}
 				</form>
 			}
-		</>
+		</React.Fragment>
 	);
 
 	return (
@@ -111,9 +125,9 @@ const LoginForm: React.FC<LoginFormProps> = ({ state, dispatchState, displayButt
 				</Card>
 			}
 			{!includeCard &&
-				<>
+				<React.Fragment>
 					{content}
-				</>
+				</React.Fragment>
 			}
 		</div>
 	);

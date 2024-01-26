@@ -4,6 +4,7 @@ import { Dropdown } from 'flowbite-react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSignOut, faUser, faUserGroup } from '@fortawesome/free-solid-svg-icons';
 import { Link } from 'react-router-dom';
+import React from 'react';
 
 const Header: React.FC<any> = (): any => {
 	const { authUser } = useContext(AuthContext);
@@ -22,7 +23,7 @@ const Header: React.FC<any> = (): any => {
 						<Link to="/" className="text-white mr-5 hover:text-gray-400">Créer un groupe</Link>
 						<Link to="/group" className="text-white mr-5 hover:text-gray-400">Retrouver un groupe</Link>
 						{authUser && (
-							<>
+							<React.Fragment>
 								<Dropdown color="gray" label={authUser.name} dismissOnClick={false}>
 									<Dropdown.Header className='flex flex-row items-center'>
 										<FontAwesomeIcon icon={faUser} className="mr-5 text-gray-500" />
@@ -45,7 +46,7 @@ const Header: React.FC<any> = (): any => {
 										<div>Se déconnecter</div>
 									</Dropdown.Item>
 								</Dropdown>
-							</>
+							</React.Fragment>
 						)}
 						{!authUser && (
 							<Link to="/login" className="mr-5 hover:text-gradient-blue-purple">Se connecter</Link>

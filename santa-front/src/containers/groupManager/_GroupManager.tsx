@@ -46,8 +46,8 @@ const GroupManager: React.FC<GroupManagerProps> = ({ group }: GroupManagerProps)
 			await GroupService.update(groupState._id, groupState);
 			setInitialGroupState(JSON.stringify(groupState));
 			// reset the cache for the group
-			queryClient.invalidateQueries({queryKey: ['group', groupState._id]});
-			queryClient.invalidateQueries({queryKey: ['groups']});
+			queryClient.invalidateQueries({ queryKey: ['group', groupState._id] });
+			queryClient.invalidateQueries({ queryKey: ['groups'] });
 		}
 		if (initialGroupState !== JSON.stringify(groupState)) {
 			updateServerValues();
@@ -60,59 +60,56 @@ const GroupManager: React.FC<GroupManagerProps> = ({ group }: GroupManagerProps)
 	}
 
 	return (
-		<>
-			{/* display the group information */}
-			<Card className="bg-frosty relative">
-				<div className="flex flex-col">
-					<div className="flex flex-row items-center">
-						<div className="flex flex-col w-1/2">
-							<h2 className="card-title text-primary">Nom du groupe</h2>
-							<div className="card-desc">Le nom du groupe est utilisé pour identifier le groupe.</div>
-						</div>
-						<div className="w-1/2">
-							<TextInput
-								name="groupName"
-								value={groupState.name}
-								onChange={(event) => handleInputChange(event?.target.value, 'name')}
-								disabled={authUser?._id !== groupState.mainUser._id}
-								data-testid="groupName"
-							/>
-						</div>
+		<Card className="bg-frosty relative text-black"> {/* display the group information */}
+			<div className="flex flex-col">
+				<div className="flex flex-row items-center">
+					<div className="flex flex-col w-1/2">
+						<h2 className="card-title text-primary">Nom du groupe</h2>
+						<div className="card-desc">Le nom du groupe est utilisé pour identifier le groupe.</div>
 					</div>
-					<hr className="border-0 border-b border-gray-300 my-4" />
-					<div className="flex flex-row items-center">
-						<div className="flex flex-col w-1/2">
-							<h2 className="card-title text-primary">Date du tirage</h2>
-							<div className="card-desc">La date où les membres du groupe doivent se faire les cadeaux</div>
-						</div>
-						<div className="w-1/2">
-							<Datepicker
-								data-testid="dueDate"
-								language="fr-FR"
-								minDate={new Date()}
-								weekStart={1}
-								value={new Date(groupState.dueDate).toLocaleDateString()}
-								title="Choisissez la date de tirage"
-								onSelectedDateChanged={(date: Date) => handleInputChange(date, 'dueDate')}
-								disabled={authUser?._id !== groupState.mainUser._id}
-							/>
-						</div>
-					</div>
-					<hr className="border-0 border-b border-gray-300 my-4" />
-					<div className="flex flex-row items-start">
-						<div className="flex flex-col w-1/2">
-							<h2 className="card-title text-primary">Associations des utilisateurs</h2>
-							<div className="card-desc">Chaque membre du groupe doit faire un cadeau à l'autre membre qui lui ait associé</div>
-						</div>
-						<Card className="w-1/2" data-testid="users-associations">
-							{groupState.associations?.map((association: any, idx: number) =>
-								<GroupUserAssociation key={`association-${idx}`} association={association} />
-							)}
-						</Card>
+					<div className="w-1/2">
+						<TextInput
+							name="groupName"
+							value={groupState.name}
+							onChange={(event) => handleInputChange(event?.target.value, 'name')}
+							disabled={authUser?._id !== groupState.mainUser._id}
+							data-testid="groupName"
+						/>
 					</div>
 				</div>
-			</Card>
-		</>
+				<hr className="border-0 border-b border-gray-300 my-4" />
+				<div className="flex flex-row items-center">
+					<div className="flex flex-col w-1/2">
+						<h2 className="card-title text-primary">Date du tirage</h2>
+						<div className="card-desc">La date où les membres du groupe doivent se faire les cadeaux</div>
+					</div>
+					<div className="w-1/2">
+						<Datepicker
+							data-testid="dueDate"
+							language="fr-FR"
+							minDate={new Date()}
+							weekStart={1}
+							value={new Date(groupState.dueDate).toLocaleDateString()}
+							title="Choisissez la date de tirage"
+							onSelectedDateChanged={(date: Date) => handleInputChange(date, 'dueDate')}
+							disabled={authUser?._id !== groupState.mainUser._id}
+						/>
+					</div>
+				</div>
+				<hr className="border-0 border-b border-gray-300 my-4" />
+				<div className="flex flex-row items-start">
+					<div className="flex flex-col w-1/2">
+						<h2 className="card-title text-primary">Associations des utilisateurs</h2>
+						<div className="card-desc">Chaque membre du groupe doit faire un cadeau à l'autre membre qui lui ait associé</div>
+					</div>
+					<Card className="w-1/2" data-testid="users-associations">
+						{groupState.associations?.map((association: any, idx: number) =>
+							<GroupUserAssociation key={`association-${idx}`} association={association} />
+						)}
+					</Card>
+				</div>
+			</div>
+		</Card >
 	);
 }
 
