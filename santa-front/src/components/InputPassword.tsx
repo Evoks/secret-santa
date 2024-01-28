@@ -30,7 +30,7 @@ const InputPassword = ({ value, setValue, property, validationFn = null }: Input
 				type={inputType}
 				placeholder="Renseignez votre mot de passe"
 				value={value}
-				color={value.length === 0 || validationFn(value) ? 'gray' : 'failure'}
+				color={value?.length === 0 || validationFn(value) ? 'gray' : 'failure'}
 				onChange={(e) => setValue(e.target.value, property)}
 				className="mb-4"
 			/>

@@ -1,6 +1,7 @@
 import { useContext } from 'react';
 import LoginSignUpForm from '../../components/LoginSignUpForm';
 import { FormGroupCreationContext } from './FormGroupCreation.context';
+import React from 'react';
 
 const FormGroupCreationStep4: React.FC = () => {
 	const { state, dispatchState } = useContext(FormGroupCreationContext);
